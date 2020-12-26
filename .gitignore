@@ -1,0 +1,7 @@
+
+myEnv/
+
+.vscode/
+.idea/
+__pycache__/
+ui_files/
