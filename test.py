@@ -2,13 +2,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from interfaces.ContactInformation import ContactInformation
 from ContactInformationUseCases import ContactInformationUseCases
+from FoodOrderUseCases import FoodOrderUseCases 
 
 class Ui_MainWindow(object):
-    def handle_button_click(self):
-        self.label.setText("Hello " + self.textInput.toPlainText())
-
-    def clearButton(self):
-        self.label.setText("Hello")
 
     def display_contact(self, contact):
         self.nameLineEdit.setText(contact.name)
@@ -39,7 +35,6 @@ class Ui_MainWindow(object):
                                      self.postcodeLineEdit.text())
 
         ContactInformationUseCases().add_new_contact(contact)
-        self.finalOutput.setText(self.get_contact_information_display())
 
     def handle_search_enter(self):
         if self.telLineEdit.text() != "":
@@ -48,6 +43,33 @@ class Ui_MainWindow(object):
                 self.display_contact(contact)
             else:
                 self.clear_contact_display()
+    
+    def handle_order_enter(self):
+        if self.enterDishLineEdit.text() != "":
+            # Check row is duplicate with existing
+
+            # Retrieve from DB based on number
+            food_item = FoodOrderUseCases().retrieve_food_item(self.enterDishLineEdit.text())
+            # get FoodItem object and populate the row
+            self.add_food_row(food_item)
+            self.enterDishLineEdit.clear()
+
+    def add_food_row(self, food_item):
+            self.tableWidget.insertRow(self.tableWidget.rowCount()) 
+
+            food_info_to_display = (food_item.item_number, 
+                        food_item.description, 
+                        food_item.description_chinese,
+                        food_item.note,
+                        food_item.quantity,
+                        food_item.display_price_string())
+            print(food_info_to_display)
+            for i in range(self.tableWidget.columnCount()):
+                item = QtWidgets.QTableWidgetItem(str(food_info_to_display[i]) if food_info_to_display[i] else "")
+                self.tableWidget.setItem(self.tableWidget.rowCount()-1, i, item)
+
+
+            self.tableWidget.scrollToBottom()
 
 
     def setup_connects(self):
@@ -57,14 +79,9 @@ class Ui_MainWindow(object):
         self.address2LineEdit.returnPressed.connect(self.handle_enter)
         self.nameLineEdit.returnPressed.connect(self.handle_enter)
 
-
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1024, 720)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
+    def setup_contact_form(self):
         self.formLayoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.formLayoutWidget.setGeometry(QtCore.QRect(660, 20, 331, 181))
+        self.formLayoutWidget.setGeometry(QtCore.QRect(660, 30, 331, 181))
         self.formLayoutWidget.setObjectName("formLayoutWidget")
         self.formLayout = QtWidgets.QFormLayout(self.formLayoutWidget)
         self.formLayout.setContentsMargins(0, 0, 0, 0)
@@ -104,8 +121,9 @@ class Ui_MainWindow(object):
         self.nameLineEdit.setObjectName("nameLineEdit")
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.nameLineEdit)
 
+    def setup_order_table(self):
         self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
-        self.tableWidget.setGeometry(QtCore.QRect(30, 30, 611, 381))
+        self.tableWidget.setGeometry(QtCore.QRect(20, 30, 631, 341))
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(6)
         self.tableWidget.setRowCount(0)
@@ -121,21 +139,41 @@ class Ui_MainWindow(object):
         self.tableWidget.setHorizontalHeaderItem(4, item)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(5, item)
+    
+    def setup_order_field(self):
+        self.enterDishLineEdit = QtWidgets.QLineEdit(self.centralwidget)
+        self.enterDishLineEdit.setObjectName(u"enterDishLineEdit")
+        self.enterDishLineEdit.setGeometry(QtCore.QRect(300, 380, 113, 41))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setWeight(75)
+        self.enterDishLineEdit.setFont(font)
+        self.enterDishLineEdit.setAlignment(QtCore.Qt.AlignCenter)
+        self.enterDishLineEdit.setText("")
 
-        self.noteLabel = QtWidgets.QLabel(self.formLayoutWidget)
-        self.noteLabel.setText("")
-        self.noteLabel.setObjectName("noteLabel")
-        self.formLayout.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.noteLabel)
-        self.noteLineEdit = QtWidgets.QLineEdit(self.formLayoutWidget)
-        self.noteLineEdit.setObjectName("noteLineEdit")
-        self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.noteLineEdit)
+        self.enterDishLineEdit.returnPressed.connect(self.handle_order_enter)
 
-        self.finalOutput = QtWidgets.QLabel(self.centralwidget)
-        self.finalOutput.setGeometry(QtCore.QRect(70, 260, 721, 251))
-        self.finalOutput.setObjectName("finalOutput")
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(1024, 720)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+
+        self.setup_contact_form()
+        self.setup_order_table()
+        self.setup_order_field()
+
+        #self.noteLabel = QtWidgets.QLabel(self.formLayoutWidget)
+        #self.noteLabel.setText("")
+        #self.noteLabel.setObjectName("noteLabel")
+        #self.formLayout.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.noteLabel)
+        #self.noteLineEdit = QtWidgets.QLineEdit(self.formLayoutWidget)
+        #self.noteLineEdit.setObjectName("noteLineEdit")
+        #self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.noteLineEdit)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1024, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -153,8 +191,7 @@ class Ui_MainWindow(object):
         self.postcodeLabel.setText(_translate("MainWindow", "Postcode: "))
         self.address1Label.setText(_translate("MainWindow", "Address:"))
         self.nameLabel.setText(_translate("MainWindow", "Name: "))
-        self.finalOutput.setText(_translate("MainWindow", "Press Enter to see output."))
-        self.noteLabel.setText(_translate("MainWindow", "Customer Note: "))
+        #self.noteLabel.setText(_translate("MainWindow", "Customer Note: "))
 
         item = self.tableWidget.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "No."))
