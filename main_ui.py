@@ -2,9 +2,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from interfaces.ContactInformation import ContactInformation
 from ContactInformationUseCases import ContactInformationUseCases
-from FoodOrderUseCases import FoodOrderUseCases 
+from FoodOrderUseCases import FoodOrder 
 
 class Ui_MainWindow(object):
+    def __init__(self):
+        # The main food order which the main window will keep track of.
+        self.food_order = FoodOrder()
 
     def display_contact(self, contact):
         self.nameLineEdit.setText(contact.name)
@@ -27,6 +30,10 @@ class Ui_MainWindow(object):
         self.address2LineEdit.clear()
         self.postcodeLineEdit.clear()
 
+    def refresh_display(self):
+        # TODO: Maybe get all the FoodItems from FoodOrder and re-display?
+        self.totalPriceDisplayLabel.setText(str(self.food_order.get_total_price()))
+
     def handle_enter(self):
         contact = ContactInformation(self.nameLineEdit.text(),
                                      self.telLineEdit.text(),
@@ -47,30 +54,29 @@ class Ui_MainWindow(object):
     def handle_order_enter(self):
         if self.enterDishLineEdit.text() != "":
             # Check row is duplicate with existing
-
+            
             # Retrieve from DB based on number
-            food_item = FoodOrderUseCases().retrieve_food_item(self.enterDishLineEdit.text())
+            food_item = self.food_order.get_food_item(self.enterDishLineEdit.text())
+            self.food_order.add_to_food_order(food_item)
             # get FoodItem object and populate the row
             self.add_food_row(food_item)
             self.enterDishLineEdit.clear()
+        self.refresh_display()
 
     def add_food_row(self, food_item):
-            self.tableWidget.insertRow(self.tableWidget.rowCount()) 
-
-            food_info_to_display = (food_item.item_number, 
-                        food_item.description, 
-                        food_item.description_chinese,
-                        food_item.note,
-                        food_item.quantity,
-                        food_item.display_price_string())
+        if food_item is not None:
+            self.tableWidget.insertRow(self.tableWidget.rowCount())
+            food_info_to_display = (food_item.item_number,
+                                    food_item.description,
+                                    food_item.description_chinese,
+                                    food_item.note,
+                                    food_item.quantity,
+                                    food_item.display_price_string())
             print(food_info_to_display)
             for i in range(self.tableWidget.columnCount()):
                 item = QtWidgets.QTableWidgetItem(str(food_info_to_display[i]) if food_info_to_display[i] else "")
                 self.tableWidget.setItem(self.tableWidget.rowCount()-1, i, item)
-
-
             self.tableWidget.scrollToBottom()
-
 
     def setup_connects(self):
         self.telLineEdit.returnPressed.connect(self.handle_search_enter)
@@ -127,23 +133,35 @@ class Ui_MainWindow(object):
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(6)
         self.tableWidget.setRowCount(0)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(0, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(1, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(2, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(3, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(4, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(5, item)
+        for i in range(6):
+            item = QtWidgets.QTableWidgetItem()
+            self.tableWidget.setHorizontalHeaderItem(i, item)
+        #Total Price Section
+        self.formLayoutWidget_2 = QtWidgets.QWidget(self.centralwidget)
+        self.formLayoutWidget_2.setObjectName(u"formLayoutWidget_2")
+        self.formLayoutWidget_2.setGeometry(QtCore.QRect(430, 390, 201, 31))
+        self.formLayout_2 = QtWidgets.QFormLayout(self.formLayoutWidget_2)
+        self.formLayout_2.setObjectName(u"formLayout_2")
+        self.formLayout_2.setFormAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.formLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.totalPriceLabel = QtWidgets.QLabel(self.formLayoutWidget_2)
+        self.totalPriceLabel.setObjectName(u"totalPriceLabel")
+        font1 = QtGui.QFont()
+        font1.setPointSize(14)
+        self.totalPriceLabel.setFont(font1)
+
+        self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.totalPriceLabel)
+
+        self.totalPriceDisplayLabel = QtWidgets.QLabel(self.formLayoutWidget_2)
+        self.totalPriceDisplayLabel.setObjectName(u"totalPriceDisplayLabel")
+        self.totalPriceDisplayLabel.setFont(font1)
+
+        self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.totalPriceDisplayLabel)    
     
     def setup_order_field(self):
         self.enterDishLineEdit = QtWidgets.QLineEdit(self.centralwidget)
         self.enterDishLineEdit.setObjectName(u"enterDishLineEdit")
-        self.enterDishLineEdit.setGeometry(QtCore.QRect(300, 380, 113, 41))
+        self.enterDishLineEdit.setGeometry(QtCore.QRect(280, 380, 111, 51))
         font = QtGui.QFont()
         font.setPointSize(12)
         font.setBold(True)
@@ -206,12 +224,6 @@ class Ui_MainWindow(object):
         item = self.tableWidget.horizontalHeaderItem(5)
         item.setText(_translate("MainWindow", "Price"))
 
+        self.totalPriceLabel.setText(_translate("MainWindow", u"Total Price", None))
+        self.totalPriceDisplayLabel.setText("")
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
