@@ -31,8 +31,10 @@ class Ui_MainWindow(object):
         self.postcodeLineEdit.clear()
 
     def refresh_display(self):
-        # TODO: Maybe get all the FoodItems from FoodOrder and re-display?
-        self.totalPriceDisplayLabel.setText(str(self.food_order.get_total_price()))
+        self.tableWidget.setRowCount(0)
+        for i in self.food_order.get_all_food_items():
+            self.add_food_row(i)
+        self.totalPriceDisplayLabel.setText("{:,.2f}".format(self.food_order.get_total_price()))
 
     def handle_enter(self):
         contact = ContactInformation(self.nameLineEdit.text(),
@@ -53,13 +55,8 @@ class Ui_MainWindow(object):
     
     def handle_order_enter(self):
         if self.enterDishLineEdit.text() != "":
-            # Check row is duplicate with existing
-            
-            # Retrieve from DB based on number
             food_item = self.food_order.get_food_item(self.enterDishLineEdit.text())
             self.food_order.add_to_food_order(food_item)
-            # get FoodItem object and populate the row
-            self.add_food_row(food_item)
             self.enterDishLineEdit.clear()
         self.refresh_display()
 
@@ -77,6 +74,9 @@ class Ui_MainWindow(object):
                 item = QtWidgets.QTableWidgetItem(str(food_info_to_display[i]) if food_info_to_display[i] else "")
                 self.tableWidget.setItem(self.tableWidget.rowCount()-1, i, item)
             self.tableWidget.scrollToBottom()
+
+    def handle_print_button(self):
+        self.food_order.save_order_to_db()
 
     def setup_connects(self):
         self.telLineEdit.returnPressed.connect(self.handle_search_enter)
@@ -172,6 +172,14 @@ class Ui_MainWindow(object):
 
         self.enterDishLineEdit.returnPressed.connect(self.handle_order_enter)
 
+    def setup_print_button(self):
+        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton.setObjectName(u"pushButton")
+        self.pushButton.setGeometry(QtCore.QRect(760, 290, 111, 71))
+        self.pushButton.setText(QtCore.QCoreApplication.translate("MainWindow", u"PRINT", None))
+
+        self.pushButton.clicked.connect(self.handle_print_button)
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1024, 720)
@@ -181,6 +189,8 @@ class Ui_MainWindow(object):
         self.setup_contact_form()
         self.setup_order_table()
         self.setup_order_field()
+
+        self.setup_print_button()
 
         #self.noteLabel = QtWidgets.QLabel(self.formLayoutWidget)
         #self.noteLabel.setText("")
@@ -224,6 +234,6 @@ class Ui_MainWindow(object):
         item = self.tableWidget.horizontalHeaderItem(5)
         item.setText(_translate("MainWindow", "Price"))
 
-        self.totalPriceLabel.setText(_translate("MainWindow", u"Total Price", None))
+        self.totalPriceLabel.setText(_translate("MainWindow", u"Total Price: £", None))
         self.totalPriceDisplayLabel.setText("")
 

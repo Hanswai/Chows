@@ -11,20 +11,20 @@ def dict_factory(cursor, row):
 class ContactInformationUseCases:
 
     def get_contact(self, telephone):
-        connection = db.connect('contactInfo.db')
+        connection = db.connect('chows_db.db')
         connection.row_factory = dict_factory
         with connection:
             c = connection.cursor()
-            c.execute("SELECT * FROM contactInfo WHERE telephone = ?", (telephone,))
+            c.execute("SELECT * FROM CONTACT_INFORMATION WHERE TELEPHONE = ?", (telephone,))
             result = c.fetchone()
             if result:
-                return ContactInformation(result['name'], result['telephone'], result['address1'], result['address2'], result['postcode'])
+                return ContactInformation(result['NAME'], result['TELEPHONE'], result['ADDRESS-1'], result['ADDRESS-2'], result['POSTCODE'])
         return None
 
     def add_new_contact(self, contact):
-        connection = db.connect('contactInfo.db')
+        connection = db.connect('chows_db.db')
         c = connection.cursor()
         insert_db = (contact.telephone, contact.name, contact.address1, contact.address2, contact.postcode,)
-        c.execute("INSERT INTO contactInfo VALUES (?,?,?, ?, ?)", insert_db)
+        c.execute("INSERT INTO CONTACT_INFORMATION VALUES (?,?,?, ?, ?)", insert_db)
         connection.commit()
         connection.close()
