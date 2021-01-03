@@ -25,6 +25,7 @@ class FoodOrder:
         self.ordered_food_items = []
         self.delivery_method = DeliveryMethod.NONE
         self.customer = None
+        self.order_id = None
 
     def reset(self):
         self.retreived_food_items.clear()
@@ -80,15 +81,26 @@ class FoodOrder:
         connection.row_factory = dict_factory
         with connection:
             c = connection.cursor()
-            insert_db = (datetime.now().date(), 
+            insert_main_order_db = (datetime.now().date(), 
                         self.delivery_method.name, 
                         self.customer.id if self.customer is not None else "",
                         str(self.get_total_price()))
             c.execute("""   INSERT INTO ORDER_DETAILS (DATE_RECEIVED, ORDER_TYPE, CUSTOMER_ID, TOTAL_PRICE) 
                             VALUES (?, ?, ?, ?) """, 
-                        insert_db)
-        connection.commit()
-        connection.close()
+                        insert_main_order_db)
+
+            self.order_id = c.lastrowid
+            insert_items_order_db = []
+            for food_item in self.ordered_food_items:
+                insert_items_order_db.append((  food_item.item_number,
+                                                self.order_id,
+                                                food_item.quantity,
+                                                food_item.note))
+            
+            c.executemany("""   INSERT INTO ORDER_ITEMS (FOOD_ITEM_ID, ORDER_ID, QUANTITY, NOTE) 
+                                VALUES (?, ?, ?, ?) """, 
+                        insert_items_order_db)
+            connection.commit()
 
     def retrieve_food_item(self, food_id):
         connection = db.connect('chows_db.db')

@@ -17,7 +17,6 @@ class CustomerUseCases:
             c = connection.cursor()
             c.execute("SELECT * FROM CUSTOMER WHERE TELEPHONE = ?", (telephone,))
             result = c.fetchone()
-            connection.close()
             if result:
                 customer = Customer(result['NAME'], result['TELEPHONE'], result['ADDRESSLINE1'], result['ADDRESSLINE2'], result['POSTCODE'])
                 customer.setId(result['CUSTOMER_ID'])
@@ -30,7 +29,5 @@ class CustomerUseCases:
         c = connection.cursor()
         insert_db = (contact.telephone, contact.name, contact.address1, contact.address2, contact.postcode, contact.comments)
         c.execute("INSERT INTO CUSTOMER(TELEPHONE, NAME, ADDRESSLINE1, ADDRESSLINE2, POSTCODE, COMMENTS) VALUES (?,?,?,?,?,?)", insert_db)
-        print(c.lastrowid)
-        contact.setId(c.lastrowid)
         connection.commit()
         connection.close()

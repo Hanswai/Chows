@@ -4,11 +4,20 @@ from interfaces.Customer import Customer
 from CustomerUseCases import CustomerUseCases
 from FoodOrderUseCases import FoodOrder
 
+from DbOrdersInterface import DbOrders
 
-class Ui_MainWindow(object):
-    def __init__(self):
+from summary_ui import SummaryWindow
+from datetime import datetime
+
+class ChowsMainWindow(QtWidgets.QMainWindow):
+    def __init__(self, parent=None):
         # The main food order which the main window will keep track of.
+        super(ChowsMainWindow, self).__init__(parent)
         self.food_order = FoodOrder()
+        self.setupUi(self)
+        self.retranslateUi(self)
+
+
 
     def display_contact(self, contact):
         self.nameLineEdit.setText(contact.name)
@@ -83,6 +92,8 @@ class Ui_MainWindow(object):
     def handle_print_button(self):
         self.food_order.set_delivery_method("COLLECTION")
         self.food_order.save_order_to_db()
+        self.food_order.reset()
+        self.refresh_display()
 
     def setup_connects(self):
         self.telLineEdit.returnPressed.connect(self.handle_search_enter)
@@ -149,6 +160,7 @@ class Ui_MainWindow(object):
         self.tableWidget.setGeometry(QtCore.QRect(20, 30, 631, 341))
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(6)
+
         self.tableWidget.setRowCount(0)
         for i in range(6):
             item = QtWidgets.QTableWidgetItem()
@@ -191,13 +203,18 @@ class Ui_MainWindow(object):
         self.enterDishLineEdit.setText("")
 
         self.enterDishLineEdit.returnPressed.connect(self.handle_order_enter)
+    
+    def summary_dialog_window(self, MainWindow):
+        #self.dialog = SummaryWindow()
+        self.dialog = SummaryWindow()
+        self.dialog.show()
 
     def setup_print_button(self):
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setObjectName(u"pushButton")
-        self.pushButton.setGeometry(QtCore.QRect(760, 290, 111, 71))
+        self.pushButton.setGeometry(QtCore.QRect(720, 600, 111, 71))
         self.pushButton.setText(
-            QtCore.QCoreApplication.translate("MainWindow", u"PRINT", None))
+            QtCore.QCoreApplication.translate("MainWindow", u"SAVE", None))
 
         self.pushButton.clicked.connect(self.handle_print_button)
 
@@ -220,41 +237,61 @@ class Ui_MainWindow(object):
         #self.noteLineEdit = QtWidgets.QLineEdit(self.formLayoutWidget)
         # self.noteLineEdit.setObjectName("noteLineEdit")
         #self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.noteLineEdit)
-
+        self.actionSummary = QtWidgets.QAction(MainWindow)
+        self.actionSummary.setObjectName(u"actionSummary")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setObjectName("menubar")
+        self.menubar.setObjectName(u"menubar")
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1024, 21))
+        self.menuView = QtWidgets.QMenu(self.menubar)
+        self.menuView.setObjectName(u"menuView")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
+        self.statusbar.setObjectName(u"statusbar")
         MainWindow.setStatusBar(self.statusbar)
+
+        self.menubar.addAction(self.menuView.menuAction())
+        self.menuView.addAction(self.actionSummary)
+
+
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         self.setup_connects()
+        self.actionSummary.triggered.connect(self.summary_dialog_window)
+
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle("Wai Wai POS")
+
+        self.actionSummary.setText("Summary")
+
         self.teleLabel.setText(_translate("MainWindow", "Phone No: "))
         self.nameLabel.setText(_translate("MainWindow", "Name: "))
         self.postcodeLabel.setText(_translate("MainWindow", "Postcode: "))
         self.address1Label.setText(_translate("MainWindow", "Address:"))
         #self.noteLabel.setText(_translate("MainWindow", "Customer Note: "))
-
+        header = self.tableWidget.horizontalHeader()
         item = self.tableWidget.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "No."))
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.Fixed)
         item = self.tableWidget.horizontalHeaderItem(1)
         item.setText(_translate("MainWindow", "Dish"))
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
         item = self.tableWidget.horizontalHeaderItem(2)
         item.setText(_translate("MainWindow", "食品"))
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
         item = self.tableWidget.horizontalHeaderItem(3)
         item.setText(_translate("MainWindow", "Note"))
+        header.setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
         item = self.tableWidget.horizontalHeaderItem(4)
         item.setText(_translate("MainWindow", "Quantity"))
+        header.setSectionResizeMode(4, QtWidgets.QHeaderView.Stretch)
         item = self.tableWidget.horizontalHeaderItem(5)
         item.setText(_translate("MainWindow", "Price"))
+        header.setSectionResizeMode(5, QtWidgets.QHeaderView.Stretch)
 
-        self.totalPriceLabel.setText(_translate(
-            "MainWindow", u"Total Price: £", None))
+        self.totalPriceLabel.setText(_translate("MainWindow", u"Total Price: £", None))
         self.totalPriceDisplayLabel.setText("")
+        self.menuView.setTitle(_translate("MainWindow", u"View", None))
