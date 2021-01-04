@@ -65,6 +65,8 @@ class SummaryWindow(QtWidgets.QDialog):
         self.comboBox.setObjectName(u"comboBox")
         self.comboBox.setGeometry(QtCore.QRect(440, 30, 111, 21))
 
+        self.comboBox.currentTextChanged.connect(self.combobox_refresh)
+
         self.retranslateUi(Dialog)
         self.buttonBox.accepted.connect(Dialog.accept)
         self.buttonBox.rejected.connect(Dialog.reject)
@@ -114,4 +116,20 @@ class SummaryWindow(QtWidgets.QDialog):
         for row in food_item_to_qty.values():
             self.add_row(row)
 
+    def combobox_refresh(self, date_range_level):
+        start_date = datetime.today()
+        end_date = datetime.today()
+        self.tableWidget.setRowCount(0)
+        if date_range_level == "Today":
+            start_date = datetime.today()
+        elif date_range_level == "This Month":
+            start_date = datetime(end_date.year, end_date.month, 1)
+        elif date_range_level == "This Year":
+            start_date = datetime(end_date.year, 1, 1)
         
+        grand_total = DbOrders.retrieve_total_price_by_date_range(start_date,end_date)
+        self.grandTotalDisplayLabel.setText("{:,.2f}".format(grand_total))
+
+        food_item_to_qty = DbOrders.retrieve_food_items_and_qty_by_date_range(start_date, end_date)
+        for row in food_item_to_qty.values():
+            self.add_row(row)
