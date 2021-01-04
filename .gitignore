@@ -5,3 +5,5 @@ myEnv/
 .idea/
 __pycache__/
 ui_files/
+
+*.sqbpro

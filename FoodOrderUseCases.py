@@ -1,5 +1,6 @@
 from interfaces.FoodItem import FoodItem
 import sqlite3 as db
+from db_variables import CHOWS_MAIN_DB
 from enum import Enum
 from datetime import datetime
 
@@ -77,7 +78,7 @@ class FoodOrder:
     #
 
     def save_order_to_db(self):
-        connection = db.connect('chows_db.db')
+        connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
         with connection:
             c = connection.cursor()
@@ -103,7 +104,7 @@ class FoodOrder:
             connection.commit()
 
     def retrieve_food_item(self, food_id):
-        connection = db.connect('chows_db.db')
+        connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
         with connection:
             c = connection.cursor()

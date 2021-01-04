@@ -192,7 +192,7 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
     def setup_order_field(self):
         self.enterDishLineEdit = QtWidgets.QLineEdit(self.centralwidget)
         self.enterDishLineEdit.setObjectName(u"enterDishLineEdit")
-        self.enterDishLineEdit.setGeometry(QtCore.QRect(280, 380, 111, 51))
+        self.enterDishLineEdit.setGeometry(QtCore.QRect(280, 380, 111, 61))
         font = QtGui.QFont()
         font.setPointSize(12)
         font.setBold(True)
@@ -296,10 +296,15 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         #self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.noteLineEdit)
         self.actionSummary = QtWidgets.QAction(MainWindow)
         self.actionSummary.setObjectName(u"actionSummary")
+        self.actionEditMenu = QtWidgets.QAction(MainWindow)
+        self.actionEditMenu.setObjectName(u"actionEditMenu")
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1024, 21))
+        self.menuEdit = QtWidgets.QMenu(self.menubar)
+        self.menuEdit.setObjectName(u"menuEdit")  
         self.menuView = QtWidgets.QMenu(self.menubar)
         self.menuView.setObjectName(u"menuView")
         MainWindow.setMenuBar(self.menubar)
@@ -309,8 +314,9 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
 
         self.menubar.addAction(self.menuView.menuAction())
         self.menuView.addAction(self.actionSummary)
-
-
+        self.menubar.addAction(self.menuEdit.menuAction())
+        self.menuEdit.addAction(self.actionEditMenu)
+        self.menuEdit.setTitle("Edit")
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -333,6 +339,7 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         MainWindow.setWindowTitle("Wai Wai POS")
 
         self.actionSummary.setText("Summary")
+        self.actionEditMenu.setText("Edit Menu")
 
         self.teleLabel.setText(_translate("MainWindow", "Phone No: "))
         self.nameLabel.setText(_translate("MainWindow", "Name: "))

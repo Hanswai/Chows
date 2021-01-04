@@ -5,6 +5,7 @@ from FoodOrderUseCases import FoodOrder
 import sqlite3 as db
 from enum import Enum
 from datetime import datetime
+from db_variables import CHOWS_MAIN_DB
 
 
 
@@ -17,7 +18,7 @@ def dict_factory(cursor, row):
 class DbOrders:
     @staticmethod
     def retrieve_total_price_by_date(date):
-        connection = db.connect('chows_db.db')
+        connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
         sum = 0
         with connection:
@@ -31,7 +32,7 @@ class DbOrders:
     
     @staticmethod
     def retrieve_food_items_and_qty_by_date(date):
-        connection = db.connect('chows_db.db')
+        connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
         food_item_id_to_qty = {}
         with connection:
@@ -57,3 +58,13 @@ class DbOrders:
                 else:
                     food_item_id_to_qty[row["FOOD_ITEM_ID"]] = SummaryFoodItem(row["FOOD_ITEM_ID"], int(row["QUANTITY"]), row["DESCRIPTION"], row["DESCRIPTION_CHINESE"])
         return food_item_id_to_qty
+
+    @staticmethod
+    def update_food_item(food_item):
+        """ deletes and inserts create."""
+        connection = db.connect(CHOWS_MAIN_DB)
+        with connection:
+            c = connection.cursor()
+            sql_query_string = """DELETE FROM FOOD_ITEM WHERE ITEM_ID = '90';
+            INSERT INTO FOOD_ITEM VALUES('90', 'Shredded Chill Spicy Beef', '牛肉絲', '7.50')"""
+            c.execute(sql_query_string, (food_item,))
