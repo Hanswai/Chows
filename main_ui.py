@@ -18,8 +18,6 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.setupUi(self)
         self.retranslateUi(self)
 
-
-
     def display_contact(self, contact):
         self.nameLineEdit.setText(contact.name)
         self.address1LineEdit.setText(contact.address1)
@@ -231,8 +229,6 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         item3.setText("Price")
         self.suggest_table_widget.setHorizontalHeaderItem(3, item3)
         header.setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)        
-        #from interfaces.FoodItem import FoodItem
-        #self.add_suggestion_row(FoodItem("16", 4.60, 1, "Smoke Chicken", "fun gei"))
         
     def add_suggestion_row(self, food_item):
         if food_item is not None:
@@ -250,21 +246,17 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
             self.suggest_table_widget.scrollToBottom()
 
     def update_suggestion_box_by_id(self, id):
-        print('id: ' + id)
-        
         food_items = DbFoodItems.retrieve_food_items_by_id(id)
         self.suggest_table_widget.setRowCount(0)
         for food_item in food_items:
             self.add_suggestion_row(food_item)
 
     def update_suggestion_box(self, text):
-        print('text: ' + text)
         food_items = DbFoodItems.retrieve_food_items_by_description(text)
         self.suggest_table_widget.setRowCount(0)
         for food_item in food_items:
             self.add_suggestion_row(food_item)
         
-
     def summary_dialog_window(self, MainWindow):
         #self.dialog = SummaryWindow()
         self.dialog = SummaryWindow()
@@ -335,8 +327,6 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.searchLineEdit.setFont(font1)
 
         self.searchLineEdit.textChanged.connect(self.update_suggestion_box)
-
-
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

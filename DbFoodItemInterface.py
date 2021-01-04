@@ -39,3 +39,8 @@ class DbFoodItems:
                 food_items.append(FoodItem(row['ITEM_ID'], float(row['PRICE']), 1, row['DESCRIPTION'], row['DESCRIPTION_CHINESE']))
         return food_items
 
+
+    @staticmethod
+    def create_food_item(id, description, description_chinese, price):
+        """ Creates a row if id has not been created."""
+        pass
