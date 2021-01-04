@@ -5,6 +5,7 @@ from CustomerUseCases import CustomerUseCases
 from FoodOrderUseCases import FoodOrder
 
 from DbOrdersInterface import DbOrders
+from DbFoodItemInterface import DbFoodItems
 
 from summary_ui import SummaryWindow
 from datetime import datetime
@@ -203,7 +204,67 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.enterDishLineEdit.setText("")
 
         self.enterDishLineEdit.returnPressed.connect(self.handle_order_enter)
-    
+        self.enterDishLineEdit.textChanged.connect(self.update_suggestion_box_by_id)
+
+    def setup_suggestion_table(self):
+        self.suggest_table_widget = QtWidgets.QTableWidget(self.centralwidget)
+        self.suggest_table_widget.setObjectName("suggest_table_widget")
+        self.suggest_table_widget.setGeometry(QtCore.QRect(20, 450, 631, 211))
+
+        self.suggest_table_widget.setColumnCount(4)
+        self.suggest_table_widget.setRowCount(0)
+
+        header = self.suggest_table_widget.horizontalHeader()
+        item0 = QtWidgets.QTableWidgetItem()
+        item0.setText("No.")
+        self.suggest_table_widget.setHorizontalHeaderItem(0, item0)
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.Fixed)
+        item1 = QtWidgets.QTableWidgetItem()
+        item1.setText("Dish")
+        self.suggest_table_widget.setHorizontalHeaderItem(1, item1)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+        item2 = QtWidgets.QTableWidgetItem()
+        item2.setText("食品")
+        self.suggest_table_widget.setHorizontalHeaderItem(2, item2)
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+        item3 = QtWidgets.QTableWidgetItem()
+        item3.setText("Price")
+        self.suggest_table_widget.setHorizontalHeaderItem(3, item3)
+        header.setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)        
+        #from interfaces.FoodItem import FoodItem
+        #self.add_suggestion_row(FoodItem("16", 4.60, 1, "Smoke Chicken", "fun gei"))
+        
+    def add_suggestion_row(self, food_item):
+        if food_item is not None:
+            self.suggest_table_widget.insertRow(self.suggest_table_widget.rowCount())
+            food_info_to_display = (food_item.item_number,
+                                    food_item.description,
+                                    food_item.description_chinese,
+                                    food_item.display_price_string())
+            for i in range(self.suggest_table_widget.columnCount()):
+                item = QtWidgets.QTableWidgetItem(
+                    str(food_info_to_display[i]) if food_info_to_display[i] else "")
+                item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)                    
+                self.suggest_table_widget.setItem(
+                    self.suggest_table_widget.rowCount()-1, i, item)
+            self.suggest_table_widget.scrollToBottom()
+
+    def update_suggestion_box_by_id(self, id):
+        print('id: ' + id)
+        
+        food_items = DbFoodItems.retrieve_food_items_by_id(id)
+        self.suggest_table_widget.setRowCount(0)
+        for food_item in food_items:
+            self.add_suggestion_row(food_item)
+
+    def update_suggestion_box(self, text):
+        print('text: ' + text)
+        food_items = DbFoodItems.retrieve_food_items_by_description(text)
+        self.suggest_table_widget.setRowCount(0)
+        for food_item in food_items:
+            self.add_suggestion_row(food_item)
+        
+
     def summary_dialog_window(self, MainWindow):
         #self.dialog = SummaryWindow()
         self.dialog = SummaryWindow()
@@ -229,6 +290,10 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.setup_order_field()
 
         self.setup_print_button()
+
+        self.setup_suggestion_table()
+        # Search Bar for suggestion Box
+        self.setup_search_bar()
 
         #self.noteLabel = QtWidgets.QLabel(self.formLayoutWidget)
         # self.noteLabel.setText("")
@@ -259,6 +324,18 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         self.setup_connects()
         self.actionSummary.triggered.connect(self.summary_dialog_window)
+
+    def setup_search_bar(self):
+        # Search Bar for suggestion Box
+        font1 = QtGui.QFont()
+        font1.setPointSize(14)
+        self.searchLineEdit = QtWidgets.QLineEdit(self.centralwidget)
+        self.searchLineEdit.setObjectName(u"searchLineEdit")
+        self.searchLineEdit.setGeometry(QtCore.QRect(40, 389, 141, 41))
+        self.searchLineEdit.setFont(font1)
+
+        self.searchLineEdit.textChanged.connect(self.update_suggestion_box)
+
 
 
     def retranslateUi(self, MainWindow):
