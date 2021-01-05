@@ -10,6 +10,8 @@ from DbFoodItemInterface import DbFoodItems
 from summary_ui import SummaryWindow
 from datetime import datetime
 
+NOTE_COLUMN_NUMBER = 3
+
 class ChowsMainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         # The main food order which the main window will keep track of.
@@ -84,6 +86,7 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
             for i in range(self.tableWidget.columnCount()):
                 item = QtWidgets.QTableWidgetItem(
                     str(food_info_to_display[i]) if food_info_to_display[i] else "")
+                
                 self.tableWidget.setItem(
                     self.tableWidget.rowCount()-1, i, item)
             self.tableWidget.scrollToBottom()
@@ -93,6 +96,12 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.food_order.save_order_to_db()
         self.food_order.reset()
         self.refresh_display()
+    
+    def handle_table_cell_edited(self, item):
+        if item.column() == NOTE_COLUMN_NUMBER and item.text() != "":
+            food_id = self.tableWidget.item(item.row(), 0).text()
+            food_item = self.food_order.get_food_item(food_id)
+            food_item.add_note(item.text())
 
     def setup_connects(self):
         self.telLineEdit.returnPressed.connect(self.handle_search_enter)
@@ -154,6 +163,14 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.formLayout.setWidget(
             5, QtWidgets.QFormLayout.FieldRole, self.address2LineEdit)
 
+        self.noteLabel = QtWidgets.QLabel(self.formLayoutWidget)
+        self.noteLabel.setText("")
+        self.noteLabel.setObjectName("noteLabel")
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.noteLabel)
+        self.noteLineEdit = QtWidgets.QLineEdit(self.formLayoutWidget)
+        self.noteLineEdit.setObjectName("noteLineEdit")
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.noteLineEdit)            
+
     def setup_order_table(self):
         self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
         self.tableWidget.setGeometry(QtCore.QRect(20, 30, 631, 341))
@@ -178,16 +195,16 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         font1 = QtGui.QFont()
         font1.setPointSize(14)
         self.totalPriceLabel.setFont(font1)
-
         self.formLayout_2.setWidget(
             0, QtWidgets.QFormLayout.LabelRole, self.totalPriceLabel)
 
         self.totalPriceDisplayLabel = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.totalPriceDisplayLabel.setObjectName(u"totalPriceDisplayLabel")
         self.totalPriceDisplayLabel.setFont(font1)
-
         self.formLayout_2.setWidget(
             0, QtWidgets.QFormLayout.FieldRole, self.totalPriceDisplayLabel)
+        
+        self.tableWidget.itemChanged.connect(self.handle_table_cell_edited)
 
     def setup_order_field(self):
         self.enterDishLineEdit = QtWidgets.QLineEdit(self.centralwidget)
@@ -287,13 +304,6 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         # Search Bar for suggestion Box
         self.setup_search_bar()
 
-        #self.noteLabel = QtWidgets.QLabel(self.formLayoutWidget)
-        # self.noteLabel.setText("")
-        # self.noteLabel.setObjectName("noteLabel")
-        #self.formLayout.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.noteLabel)
-        #self.noteLineEdit = QtWidgets.QLineEdit(self.formLayoutWidget)
-        # self.noteLineEdit.setObjectName("noteLineEdit")
-        #self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.noteLineEdit)
         self.actionSummary = QtWidgets.QAction(MainWindow)
         self.actionSummary.setObjectName(u"actionSummary")
         self.actionEditMenu = QtWidgets.QAction(MainWindow)
@@ -341,11 +351,11 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.actionSummary.setText("Summary")
         self.actionEditMenu.setText("Edit Menu")
 
-        self.teleLabel.setText(_translate("MainWindow", "Phone No: "))
-        self.nameLabel.setText(_translate("MainWindow", "Name: "))
-        self.postcodeLabel.setText(_translate("MainWindow", "Postcode: "))
-        self.address1Label.setText(_translate("MainWindow", "Address:"))
-        #self.noteLabel.setText(_translate("MainWindow", "Customer Note: "))
+        self.teleLabel.setText("Phone No: ")
+        self.nameLabel.setText("Name: ")
+        self.postcodeLabel.setText("Postcode: ")
+        self.address1Label.setText("Address:")
+        self.noteLabel.setText("Customer Note: ")
         header = self.tableWidget.horizontalHeader()
         item = self.tableWidget.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "No."))
@@ -358,7 +368,7 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
         item = self.tableWidget.horizontalHeaderItem(3)
         item.setText(_translate("MainWindow", "Note"))
-        header.setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(NOTE_COLUMN_NUMBER, QtWidgets.QHeaderView.Stretch)
         item = self.tableWidget.horizontalHeaderItem(4)
         item.setText(_translate("MainWindow", "Quantity"))
         header.setSectionResizeMode(4, QtWidgets.QHeaderView.Stretch)
