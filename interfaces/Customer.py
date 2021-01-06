@@ -14,3 +14,6 @@ class Customer:
 
     def setId(self, id):
         self.id = id
+    
+    def set_comment(self, comment):
+        self.comment = comment

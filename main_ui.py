@@ -32,6 +32,7 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.address1LineEdit.clear()
         self.address2LineEdit.clear()
         self.postcodeLineEdit.clear()
+        self.noteLineEdit.clear()
 
     def refresh_display(self):
         self.tableWidget.setRowCount(0)
@@ -41,13 +42,15 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
             "{:,.2f}".format(self.food_order.get_total_price()))
 
     def save(self):
-        contact = Customer(self.nameLineEdit.text(),
-                           self.telLineEdit.text(),
-                           self.address1LineEdit.text(),
-                           self.address2LineEdit.text(),
-                           self.postcodeLineEdit.text())
-        contact = CustomerUseCases().add_new_contact(contact)
-        self.food_order.set_customer(contact)
+        if self.telLineEdit.text() != "":
+            contact = Customer(self.nameLineEdit.text(),
+                            self.telLineEdit.text(),
+                            self.address1LineEdit.text(),
+                            self.address2LineEdit.text(),
+                            self.postcodeLineEdit.text())
+            contact.set_comment(self.noteLineEdit.text())
+            contact = CustomerUseCases().add_new_contact(contact)
+            self.food_order.set_customer(contact)
         self.food_order.save_order_to_db()
 
     def handle_enter(self):
@@ -288,13 +291,19 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.dialog = SummaryWindow()
         self.dialog.show()
 
-    def setup_print_button(self):
+    def setup_collection_button(self):
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setObjectName(u"pushButton")
-        self.pushButton.setGeometry(QtCore.QRect(720, 600, 111, 71))
-        self.pushButton.setText("Collection")
-
+        self.pushButton.setGeometry(QtCore.QRect(690, 580, 121, 81))
+        self.pushButton.setText("COLLECTION")
         self.pushButton.clicked.connect(self.handle_collection_button)
+
+    def setup_delivery_button(self):
+        self.delivery_button = QtWidgets.QPushButton(self.centralwidget)
+        self.delivery_button.setObjectName(u"delivery_button")
+        self.delivery_button.setGeometry(QtCore.QRect(850, 580, 121, 81))
+        self.delivery_button.setText("DELIVERY")
+        self.delivery_button.clicked.connect(self.handle_delivery_button)        
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -306,7 +315,8 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.setup_order_table()
         self.setup_order_field()
 
-        self.setup_print_button()
+        self.setup_collection_button()
+        self.setup_delivery_button()
 
         self.setup_suggestion_table()
         # Search Bar for suggestion Box
