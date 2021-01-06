@@ -48,6 +48,8 @@ class FoodOrder:
             self.delivery_method = DeliveryMethod.COLLECTION
         elif delivery_method_string == "DELIVERY":
             self.delivery_method = DeliveryMethod.DELIVERY
+        elif delivery_method_string == "PRESENT":
+            self.delivery_method = DeliveryMethod.PRESENT
         else:
             self.delivery_method = DeliveryMethod.NONE
     

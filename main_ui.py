@@ -21,19 +21,11 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.retranslateUi(self)
 
     def display_contact(self, contact):
+        self.telLineEdit.setText(contact.telephone)
         self.nameLineEdit.setText(contact.name)
         self.address1LineEdit.setText(contact.address1)
         self.address2LineEdit.setText(contact.address2)
         self.postcodeLineEdit.setText(contact.postcode)
-
-    def get_contact_information_display(self):
-        display_string = ""
-        display_string += "Hello " + self.nameLineEdit.text() + ", "
-        display_string += self.address1LineEdit.text() + " "
-        display_string += self.address2Label.text() + ", "
-        display_string += self.postcodeLineEdit.text() + "."
-        display_string += "You can contact with " + self.telLineEdit.text()
-        return display_string
 
     def clear_contact_display(self):
         self.nameLineEdit.clear()
@@ -48,14 +40,18 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.totalPriceDisplayLabel.setText(
             "{:,.2f}".format(self.food_order.get_total_price()))
 
-    def handle_enter(self):
+    def save(self):
         contact = Customer(self.nameLineEdit.text(),
                            self.telLineEdit.text(),
                            self.address1LineEdit.text(),
                            self.address2LineEdit.text(),
                            self.postcodeLineEdit.text())
+        contact = CustomerUseCases().add_new_contact(contact)
+        self.food_order.set_customer(contact)
+        self.food_order.save_order_to_db()
 
-        CustomerUseCases().add_new_contact(contact)
+    def handle_enter(self):
+        pass
 
     def handle_search_enter(self):
         if self.telLineEdit.text() != "":
@@ -91,10 +87,23 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
                     self.tableWidget.rowCount()-1, i, item)
             self.tableWidget.scrollToBottom()
 
-    def handle_print_button(self):
-        self.food_order.set_delivery_method("COLLECTION")
-        self.food_order.save_order_to_db()
+    def handle_collection_button(self):
+        if self.telLineEdit.text() != "":
+            self.food_order.set_delivery_method("COLLECTION")
+        else:
+            self.food_order.set_delivery_method("PRESENT")
+        self.save()
         self.food_order.reset()
+        self.telLineEdit.clear()
+        self.clear_contact_display()
+        self.refresh_display()
+
+    def handle_delivery_button(self):
+        self.food_order.set_delivery_method("DELIVERY")
+        self.save()
+        self.food_order.reset()
+        self.telLineEdit.clear()
+        self.clear_contact_display()
         self.refresh_display()
     
     def handle_table_cell_edited(self, item):
@@ -283,10 +292,9 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setObjectName(u"pushButton")
         self.pushButton.setGeometry(QtCore.QRect(720, 600, 111, 71))
-        self.pushButton.setText(
-            QtCore.QCoreApplication.translate("MainWindow", u"SAVE", None))
+        self.pushButton.setText("Collection")
 
-        self.pushButton.clicked.connect(self.handle_print_button)
+        self.pushButton.clicked.connect(self.handle_collection_button)
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")

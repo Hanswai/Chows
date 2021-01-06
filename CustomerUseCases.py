@@ -24,10 +24,32 @@ class CustomerUseCases:
         return None
 
     def add_new_contact(self, contact):
-        # TODO: Check for exisitng matching Customer before Adding new contact.
+        """Add new Customer - overwrites if it already exists."""
         connection = db.connect(CHOWS_MAIN_DB)
-        c = connection.cursor()
-        insert_db = (contact.telephone, contact.name, contact.address1, contact.address2, contact.postcode, contact.comments)
-        c.execute("INSERT INTO CUSTOMER(TELEPHONE, NAME, ADDRESSLINE1, ADDRESSLINE2, POSTCODE, COMMENTS) VALUES (?,?,?,?,?,?)", insert_db)
-        connection.commit()
-        connection.close()
+        with connection:
+            c = connection.cursor()
+            db_contact = self.get_contact(contact.telephone)
+            insert_db = (contact.telephone, contact.name, contact.address1, contact.address2, contact.postcode, contact.comments)
+            if db_contact is not None:
+                c.execute("""   UPDATE CUSTOMER 
+                                SET
+                                    TELEPHONE = ?, 
+                                    NAME = ?, 
+                                    ADDRESSLINE1 = ?, 
+                                    ADDRESSLINE2 = ?, 
+                                    POSTCODE = ?, 
+                                    COMMENTS = ?
+                                WHERE CUSTOMER_ID = ?""", (  contact.telephone, 
+                                                            contact.name, 
+                                                            contact.address1, 
+                                                            contact.address2, 
+                                                            contact.postcode, 
+                                                            contact.comments, 
+                                                            db_contact.id))
+                contact.setId(db_contact.id)
+            else:
+                c.execute("INSERT INTO CUSTOMER(TELEPHONE, NAME, ADDRESSLINE1, ADDRESSLINE2, POSTCODE, COMMENTS) VALUES (?,?,?,?,?,?)", insert_db)
+                contact.setId(c.lastrowid)
+            connection.commit()
+            return contact
+        return None
