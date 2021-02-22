@@ -4,10 +4,9 @@ from interfaces.Customer import Customer
 from CustomerUseCases import CustomerUseCases
 from FoodOrderUseCases import FoodOrder
 
-from DbOrdersInterface import DbOrders
 from DbFoodItemInterface import DbFoodItems
 
-from summary_ui import SummaryWindow
+from UI.summary_ui import SummaryWindow
 from datetime import datetime
 
 NOTE_COLUMN_NUMBER = 3

@@ -1,4 +1,4 @@
-from main_ui import ChowsMainWindow
+from UI.main_ui import ChowsMainWindow
 from PyQt5 import QtWidgets
 import sys
 

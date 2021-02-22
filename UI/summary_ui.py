@@ -1,15 +1,34 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from enum import Enum
 
 from DbOrdersInterface import DbOrders
-
 from datetime import datetime
 
+class DateRange(Enum):
+    DAY = "Today"
+    MONTH = "This Month"
+    YEAR = "This Year"
+
+    @staticmethod
+    def from_str(label):
+        if label == "Today":
+            return DateRange.DAY
+        elif label == "This Month":
+            return DateRange.MONTH
+        elif label == "This Year":
+            return DateRange.YEAR
+        else:
+            raise NotImplementedError
+
 class SummaryWindow(QtWidgets.QDialog):
+
+
     def __init__(self, parent=None):
         super(SummaryWindow, self).__init__(parent)
         self.setupUi(self)
         self.retranslateUi(self)
         self.populate_table()
+        self.date_range_level = DateRange.DAY
 
     def setupUi(self, Dialog):
         if Dialog.objectName():
@@ -67,9 +86,16 @@ class SummaryWindow(QtWidgets.QDialog):
 
         self.comboBox.currentTextChanged.connect(self.combobox_refresh)
 
+        self.clearButton = QtWidgets.QPushButton(Dialog)
+        self.clearButton.setObjectName(u"pushButton")
+        self.clearButton.setGeometry(QtCore.QRect(40, 30, 91, 21))
+        self.clearButton.setText("Clear")
+
         self.retranslateUi(Dialog)
         self.buttonBox.accepted.connect(Dialog.accept)
         self.buttonBox.rejected.connect(Dialog.reject)
+
+        self.clearButton.clicked.connect(self.clear_data)
 
         QtCore.QMetaObject.connectSlotsByName(Dialog)
     # setupUi
@@ -117,19 +143,40 @@ class SummaryWindow(QtWidgets.QDialog):
             self.add_row(row)
 
     def combobox_refresh(self, date_range_level):
-        start_date = datetime.today()
-        end_date = datetime.today()
+        self.date_range_level = DateRange.from_str(date_range_level)
+        start_date, end_date = self.get_absolute_date_range(self.date_range_level)
+
         self.tableWidget.setRowCount(0)
-        if date_range_level == "Today":
-            start_date = datetime.today()
-        elif date_range_level == "This Month":
-            start_date = datetime(end_date.year, end_date.month, 1)
-        elif date_range_level == "This Year":
-            start_date = datetime(end_date.year, 1, 1)
-        
-        grand_total = DbOrders.retrieve_total_price_by_date_range(start_date,end_date)
-        self.grandTotalDisplayLabel.setText("{:,.2f}".format(grand_total))
 
         food_item_to_qty = DbOrders.retrieve_food_items_and_qty_by_date_range(start_date, end_date)
         for row in food_item_to_qty.values():
             self.add_row(row)
+        
+        grand_total = DbOrders.retrieve_total_price_by_date_range(start_date,end_date)
+        self.grandTotalDisplayLabel.setText("{:,.2f}".format(grand_total))
+
+        self.clearButton.setText("Clear "+ date_range_level)
+
+
+    def clear_data(self):
+        start_date, end_date = self.get_absolute_date_range(self.date_range_level)
+
+        print("Clearing data for Date Range: " + self.date_range_level.value)
+        print("Start Date: " + str(start_date) + ", End Date: " + str(end_date))
+
+        DbOrders.delete_orders_by_date_range(start_date, end_date)
+
+        self.tableWidget.setRowCount(0)
+
+ 
+
+    def get_absolute_date_range(self, date_range_level: DateRange):
+        start_date = datetime.today()
+        end_date = datetime.today()
+        if date_range_level == DateRange.DAY:
+            start_date = datetime.today()
+        elif date_range_level == DateRange.MONTH:
+            start_date = datetime(end_date.year, end_date.month, 1)
+        elif date_range_level == DateRange.YEAR:
+            start_date = datetime(end_date.year, 1, 1)
+        return start_date, end_date

@@ -1,7 +1,6 @@
 """ A Bunch of ultity functions to interface with DB"""
 
 from interfaces.SummaryFoodItem import SummaryFoodItem
-from FoodOrderUseCases import FoodOrder
 import sqlite3 as db
 from enum import Enum
 from datetime import datetime
@@ -102,6 +101,30 @@ class DbOrders:
         return food_item_id_to_qty
 
     @staticmethod
+    def delete_orders_by_date_range(start_date, end_date):
+        connection = db.connect(CHOWS_MAIN_DB)
+        with connection:
+            c = connection.cursor()
+            select_id_query_string = "SELECT ORDER_ID FROM ORDER_DETAILS WHERE DATE_RECEIVED between date(?) AND date(?)"
+            c.execute(select_id_query_string, (start_date, end_date,))
+            ids_to_delete = c.fetchall()
+            if len(ids_to_delete) > 0:
+                delete_order_items_query_string = """
+                                    DELETE FROM ORDER_ITEMS WHERE ORDER_ID = ?;
+                                    """
+                delete_orders_query_string = """
+                                    DELETE FROM ORDER_DETAILS WHERE ORDER_ID = ?;
+                                    """                                
+                c.executemany(delete_order_items_query_string, ids_to_delete)
+                c.executemany(delete_orders_query_string, ids_to_delete)
+                print("Deleted " + str(len(ids_to_delete)) + " orders." )
+                connection.commit()
+            else:
+                print("Nothing to delete")
+        
+
+
+    @staticmethod
     def update_food_item(food_item):
         """ deletes and inserts create."""
         connection = db.connect(CHOWS_MAIN_DB)
@@ -110,3 +133,4 @@ class DbOrders:
             sql_query_string = """DELETE FROM FOOD_ITEM WHERE ITEM_ID = '90';
             INSERT INTO FOOD_ITEM VALUES('90', 'Shredded Chill Spicy Beef', '牛肉絲', '7.50')"""
             c.execute(sql_query_string, (food_item,))
+            connection.commit()
