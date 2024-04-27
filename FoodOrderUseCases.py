@@ -108,6 +108,7 @@ class FoodOrder:
     def retrieve_food_item(self, food_id):
         connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
+        food_item = None
         with connection:
             c = connection.cursor()
             c.execute("SELECT * FROM FOOD_ITEM WHERE ITEM_ID = ?", (food_id,))
@@ -115,5 +116,4 @@ class FoodOrder:
             if result:
                 food_item = FoodItem(result['ITEM_ID'], float(result['PRICE']), 1, result['DESCRIPTION'], result['DESCRIPTION_CHINESE'])
                 self.retreived_food_items.append(food_item)
-                return food_item
-        return None
+        return food_item
