@@ -1,8 +1,9 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from UI.dialog import NoActionDialog
 from interfaces.Customer import Customer
 from CustomerUseCases import CustomerUseCases
-from FoodOrderUseCases import FoodOrder
+from FoodOrderUseCases import FoodNotFoundException, FoodOrder
 
 from DbFoodItemInterface import DbFoodItems
 
@@ -65,11 +66,18 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
 
     def handle_order_enter(self):
         if self.enterDishLineEdit.text() != "":
-            food_item = self.food_order.get_food_item(
-                self.enterDishLineEdit.text())
-            self.food_order.add_to_food_order(food_item)
-            self.enterDishLineEdit.clear()
+            try:
+                food_item = self.food_order.get_food_item(
+                    self.enterDishLineEdit.text())
+                self.food_order.add_to_food_order(food_item)
+                self.enterDishLineEdit.clear()
+            except FoodNotFoundException as e:
+                self.displayFoodNotFoundDialog(e.food_id)
         self.refresh_display()
+
+    def displayFoodNotFoundDialog(self, food_id):
+        NoActionDialog(food_id).exec()
+
 
     def add_food_row(self, food_item):
         if food_item is not None:

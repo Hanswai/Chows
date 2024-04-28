@@ -4,8 +4,6 @@ from db_variables import CHOWS_MAIN_DB
 from enum import Enum
 from datetime import datetime
 
-from CustomerUseCases import CustomerUseCases
-
 def dict_factory(cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):
@@ -19,10 +17,17 @@ class DeliveryMethod(Enum):
     PRESENT = 3
     DELIVERY = 4
 
+class FoodNotFoundException(Exception):
+    def __init__(self, food_id) -> None:
+        self.food_id = food_id
+        message = f"{food_id} not found in DB."
+        super().__init__(message)
+
+
 
 class FoodOrder:
     def __init__(self):
-        self.retreived_food_items = []
+        self.retreived_food_items = [] # This is acting like a cache - I can use the python built in cache rather than managing it myself.
         self.ordered_food_items = []
         self.delivery_method = DeliveryMethod.NONE
         self.customer = None
@@ -116,4 +121,5 @@ class FoodOrder:
             if result:
                 food_item = FoodItem(result['ITEM_ID'], float(result['PRICE']), 1, result['DESCRIPTION'], result['DESCRIPTION_CHINESE'])
                 self.retreived_food_items.append(food_item)
-        return food_item
+                return food_item
+        raise FoodNotFoundException(food_id)
