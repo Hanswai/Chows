@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from ChowsPrinter import get_printer, print_english_order
 from UI.dialog import NoActionDialog
 from interfaces.Customer import Customer
 from CustomerUseCases import CustomerUseCases
@@ -41,17 +42,10 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.totalPriceDisplayLabel.setText(
             "{:,.2f}".format(self.food_order.get_total_price()))
 
-    def save(self):
-        if self.telLineEdit.text() != "":
-            contact = Customer(self.nameLineEdit.text(),
-                            self.telLineEdit.text(),
-                            self.address1LineEdit.text(),
-                            self.address2LineEdit.text(),
-                            self.postcodeLineEdit.text())
-            contact.set_comment(self.noteLineEdit.text())
-            contact = CustomerUseCases().add_new_contact(contact)
-            self.food_order.set_customer(contact)
-        self.food_order.save_order_to_db()
+    def save(self, food_order: FoodOrder):
+        food_order.save_order_to_db()
+        CustomerUseCases().add_new_contact(food_order.customer)
+
 
     def handle_enter(self):
         pass
@@ -102,7 +96,12 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
             self.food_order.set_delivery_method("COLLECTION")
         else:
             self.food_order.set_delivery_method("PRESENT")
-        self.save()
+
+        customer = self.extract_customer()
+        printer = get_printer()
+        self.food_order.set_customer(customer)
+        self.save(self.food_order)
+        print_english_order(printer, self.food_order)
         self.food_order.reset()
         self.telLineEdit.clear()
         self.clear_contact_display()
@@ -110,12 +109,28 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
 
     def handle_delivery_button(self):
         self.food_order.set_delivery_method("DELIVERY")
-        self.save()
+        customer = self.extract_customer()
+        printer = get_printer()
+        self.food_order.set_customer(customer)
+        self.save(self.food_order, customer)
+
         self.food_order.reset()
         self.telLineEdit.clear()
         self.clear_contact_display()
         self.refresh_display()
     
+    def extract_customer(self):
+        if self.telLineEdit.text() != "":
+            contact = Customer(self.nameLineEdit.text(),
+                            self.telLineEdit.text(),
+                            self.address1LineEdit.text(),
+                            self.address2LineEdit.text(),
+                            self.postcodeLineEdit.text())
+            contact.set_comment(self.noteLineEdit.text())
+            self.food_order.set_customer(contact)
+            return contact
+        return Customer()
+
     def handle_table_cell_edited(self, item):
         if item.column() == NOTE_COLUMN_NUMBER and item.text() != "":
             food_id = self.tableWidget.item(item.row(), 0).text()

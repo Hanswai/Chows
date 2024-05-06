@@ -1,5 +1,5 @@
 class Customer:
-    def __init__(self, name, telephone, address1="", address2="", postcode=""):
+    def __init__(self, name="", telephone="", address1="", address2="", postcode=""):
         self.name = name
         self.telephone = telephone
         self.address1 = address1

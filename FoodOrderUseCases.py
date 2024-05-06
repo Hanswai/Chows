@@ -85,6 +85,8 @@ class FoodOrder:
     #
 
     def save_order_to_db(self):
+        if len(self.ordered_food_items) == 0:
+            return 
         connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
         with connection:
