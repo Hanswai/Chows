@@ -1,5 +1,5 @@
 from escpos.constants import TXT_SIZE, ESC
-from escpos.printer import Usb
+from escpos.printer import Usb, Dummy
 import os
 import six
 import datetime
@@ -24,7 +24,11 @@ if not usbLibPath1 in os.environ["PATH"]:
     os.environ["PATH"]+=usbLibPath1
 
 def get_printer():
-    return Usb(0x0483, 0x5743)
+    try:
+        return Usb(0x0483, 0x5743)
+    except:
+        print("Not Printer found, going to dummy mode")
+        return Dummy()
 
 
 def print_line_divider_center_small(printer):
