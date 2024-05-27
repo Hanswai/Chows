@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import *
 
 from datetime import datetime
 
-from DbFoodItemInterface import *
+from DbDishInterface import *
 from FoodOrderUseCases import FoodNotFoundException
 
 
@@ -93,7 +93,7 @@ class DishWindow(QDialog):
 
     def handle_dish_number_enter(self):
         if self.dish_number_input.text() != "":
-            dishes = DbFoodItems.retrieve_food_items_by_id(self.dish_number_input.text())
+            dishes = DbDish.retrieve_dishes_by_id(self.dish_number_input.text())
             if len(dishes) == 0:   # New food 
                 print("Dish not found, creata new food on save")
             else:

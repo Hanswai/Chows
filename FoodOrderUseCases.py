@@ -1,3 +1,4 @@
+from DbDishInterface import DbDish
 from interfaces.FoodItem import FoodItem
 import sqlite3 as db
 from db_variables import CHOWS_MAIN_DB
@@ -78,7 +79,11 @@ class FoodOrder:
                 if result:
                     return result
             # Otherwise retrieve from db.
-            return self.retrieve_food_item(food_id)
+            dish_from_db =  DbDish.retrieve_dishes_by_id(food_id)
+            if len(dish_from_db) == 0:
+                raise FoodNotFoundException(food_id)
+            else:
+                return dish_from_db[0]
 
     #
     # DB related functions
@@ -112,16 +117,16 @@ class FoodOrder:
                         insert_items_order_db)
             connection.commit()
 
-    def retrieve_food_item(self, food_id):
-        connection = db.connect(CHOWS_MAIN_DB)
-        connection.row_factory = dict_factory
-        food_item = None
-        with connection:
-            c = connection.cursor()
-            c.execute("SELECT * FROM FOOD_ITEM WHERE ITEM_ID = ?", (food_id,))
-            result = c.fetchone()
-            if result:
-                food_item = FoodItem(result['ITEM_ID'], float(result['PRICE']), 1, result['DESCRIPTION'], result['DESCRIPTION_CHINESE'])
-                self.retreived_food_items.append(food_item)
-                return food_item
-        raise FoodNotFoundException(food_id)
+    # def retrieve_food_item(self, food_id):
+    #     connection = db.connect(CHOWS_MAIN_DB)
+    #     connection.row_factory = dict_factory
+    #     food_item = None
+    #     with connection:
+    #         c = connection.cursor()
+    #         c.execute("SELECT * FROM DISH WHERE ID = ?", (food_id,))
+    #         result = c.fetchone()
+    #         if result:
+    #             food_item = FoodItem(result['ITEM_ID'], float(result['PRICE']), 1, result['DESCRIPTION'], result['DESCRIPTION_CHINESE'])
+    #             self.retreived_food_items.append(food_item)
+    #             return food_item
+    #     raise FoodNotFoundException(food_id)

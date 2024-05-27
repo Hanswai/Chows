@@ -7,7 +7,7 @@ from interfaces.Customer import Customer
 from CustomerUseCases import CustomerUseCases
 from FoodOrderUseCases import FoodNotFoundException, FoodOrder
 
-from DbFoodItemInterface import DbFoodItems
+from DbDishInterface import DbDish
 
 from UI.summary_ui import SummaryWindow
 from datetime import datetime
@@ -298,13 +298,13 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
             self.suggest_table_widget.scrollToBottom()
 
     def update_suggestion_box_by_id(self, id):
-        food_items = DbFoodItems.retrieve_food_items_by_id(id)
+        food_items = DbDish.retrieve_dishes_by_id(id)
         self.suggest_table_widget.setRowCount(0)
         for food_item in food_items:
             self.add_suggestion_row(food_item)
 
     def update_suggestion_box(self, text):
-        food_items = DbFoodItems.retrieve_food_items_by_description(text)
+        food_items = DbDish.retrieve_dishes_by_description(text)
         self.suggest_table_widget.setRowCount(0)
         for food_item in food_items:
             self.add_suggestion_row(food_item)

@@ -40,13 +40,13 @@ class DbOrders:
                                 SELECT 
                                     oi.FOOD_ITEM_ID, 
                                     oi.QUANTITY, 
-                                    fi.DESCRIPTION,
-                                    fi.DESCRIPTION_CHINESE
+                                    d.DESCRIPTION,
+                                    d.DESCRIPTION_CHINESE
                                 FROM ORDER_DETAILS od 
                                 INNER JOIN ORDER_ITEMS oi ON 
                                     od.ORDER_ID = oi.ORDER_ID
-                                LEFT JOIN FOOD_ITEM fi ON
-	                                oi.FOOD_ITEM_ID = fi.ITEM_ID
+                                LEFT JOIN DISH d ON
+	                                oi.FOOD_ITEM_ID = d.ID
                                 WHERE od.DATE_RECEIVED = date(?);
                                 """
             c.execute(sql_query_string, (date,))
@@ -82,13 +82,13 @@ class DbOrders:
                                 SELECT 
                                     oi.FOOD_ITEM_ID, 
                                     oi.QUANTITY, 
-                                    fi.DESCRIPTION,
-                                    fi.DESCRIPTION_CHINESE
+                                    d.DESCRIPTION,
+                                    d.DESCRIPTION_CHINESE
                                 FROM ORDER_DETAILS od 
                                 INNER JOIN ORDER_ITEMS oi ON 
                                     od.ORDER_ID = oi.ORDER_ID
-                                LEFT JOIN FOOD_ITEM fi ON
-	                                oi.FOOD_ITEM_ID = fi.ITEM_ID
+                                LEFT JOIN DISH d ON
+	                                oi.FOOD_ITEM_ID = d.ID
                                 WHERE od.DATE_RECEIVED between date(?) and date(?);
                                 """
             c.execute(sql_query_string, (start_date, end_date,))
@@ -122,15 +122,3 @@ class DbOrders:
             else:
                 print("Nothing to delete")
         
-
-
-    @staticmethod
-    def update_food_item(food_item):
-        """ deletes and inserts create."""
-        connection = db.connect(CHOWS_MAIN_DB)
-        with connection:
-            c = connection.cursor()
-            sql_query_string = """DELETE FROM FOOD_ITEM WHERE ITEM_ID = '90';
-            INSERT INTO FOOD_ITEM VALUES('90', 'Shredded Chill Spicy Beef', '牛肉絲', '7.50')"""
-            c.execute(sql_query_string, (food_item,))
-            connection.commit()

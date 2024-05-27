@@ -15,10 +15,10 @@ class DuplicateFoodException(Exception):
         # Call the base class constructor with the parameters it needs
         super().__init__(message)
 
-class DbFoodItems:
+class DbDish:
   
     @staticmethod
-    def retrieve_food_items_by_id(sub_id):
+    def retrieve_dishes_by_id(sub_id):
         connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
         food_items = []
@@ -32,7 +32,7 @@ class DbFoodItems:
         return food_items
 
     @staticmethod
-    def retrieve_food_items_by_description(text):
+    def retrieve_dishes_by_description(text):
         connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
         food_items = []
@@ -47,7 +47,7 @@ class DbFoodItems:
 
 
     @staticmethod
-    def create_food_item(id, description, description_chinese, price):
+    def create_dish(id, description, description_chinese, price):
         """ Creates a row if id has not been created."""
         connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
@@ -65,7 +65,7 @@ class DbFoodItems:
             connection.commit()
 
     @staticmethod
-    def update_food_item(id, description, description_chinese, price):
+    def update_dish(id, description, description_chinese, price):
         """ Creates a row if id has not been created."""
         connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
