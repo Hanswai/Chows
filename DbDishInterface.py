@@ -11,9 +11,9 @@ def dict_factory(cursor, row):
     return d
 
 class DuplicateFoodException(Exception):
-    def __init__(self, message):            
+    def __init__(self):            
         # Call the base class constructor with the parameters it needs
-        super().__init__(message)
+        super().__init__()
 
 class DbDish:
   
@@ -56,16 +56,16 @@ class DbDish:
             c = connection.cursor()
             try:
                 insert_new_dishes = (dish.id, dish.description, dish.description_chinese, dish.unit_price)
-                c.execute("""   INSERT INTO DISH (ID, DESCRIPTION, DESCRIPTION_CHINESE, PRICE) 
+                c.execute("""   INSERT INTO DISH(ID, DESCRIPTION, DESCRIPTION_CHINESE, PRICE) 
                                 VALUES (?, ?, ?, ?) """, 
                             insert_new_dishes)
 
             except db.IntegrityError as e:
-                raise e
+                raise DuplicateFoodException()
             connection.commit()
 
     @staticmethod
-    def update_dish(id, description, description_chinese, price):
+    def update_dish(dish: Dish):
         """ Creates a row if id has not been created."""
         connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
@@ -73,7 +73,7 @@ class DbDish:
         with connection:
             c = connection.cursor()
             try:
-                update_dish_data = (description, description_chinese, price, id)
+                update_dish_data = (dish.description, dish.description_chinese, dish.unit_price, dish.id)
                 c.execute("""   UPDATE DISH SET DESCRIPTION = ?, DESCRIPTION_CHINESE = ? , PRICE = ? where ID = ?
                                 """, 
                             update_dish_data)

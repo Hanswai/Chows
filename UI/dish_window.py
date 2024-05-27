@@ -124,9 +124,14 @@ class DishWindow(QDialog):
         
         if not error:
             self.display_label.setText(message if error else "Saving...")
-            dish_to_save = Dish(self.dish_number_input.text, self.price_input.text, 1, self.dish_name_input.text, self.dish_chinese_input)
-            DbDish.create_dish(dish_to_save)
-            self.display_label.setText("Success!")
+            dish_to_save = Dish(self.dish_number_input.text(), self.price_input.text(), 1, self.dish_name_input.text(), self.dish_chinese_input.text())
+            try:
+                DbDish.create_dish(dish_to_save)
+                self.display_label.setText("New Dish Created!")
+
+            except DuplicateFoodException:
+                DbDish.update_dish(dish_to_save)
+                self.display_label.setText("Dish Updated!")
 
 
 
