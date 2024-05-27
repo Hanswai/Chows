@@ -63,4 +63,21 @@ class DbFoodItems:
             except db.IntegrityError as e:
                 raise e
             connection.commit()
+
+    @staticmethod
+    def update_food_item(id, description, description_chinese, price):
+        """ Creates a row if id has not been created."""
+        connection = db.connect(CHOWS_MAIN_DB)
+        connection.row_factory = dict_factory
+
+        with connection:
+            c = connection.cursor()
+            try:
+                update_food_item_data = (description, description_chinese, price, id)
+                c.execute("""   UPDATE FOOD_ITEM SET DESCRIPTION = ?, DESCRIPTION_CHINESE = ? , PRICE = ? where ITEM_ID = ?
+                                """, 
+                            update_food_item_data)
+            except db.IntegrityError as e:
+                raise e
+            connection.commit()
             

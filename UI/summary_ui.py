@@ -167,6 +167,7 @@ class SummaryWindow(QtWidgets.QDialog):
         DbOrders.delete_orders_by_date_range(start_date, end_date)
 
         self.tableWidget.setRowCount(0)
+        self.combobox_refresh(self.date_range_level.value)
 
  
 

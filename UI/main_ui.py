@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from ChowsPrinter import get_printer, print_english_order
 from UI.dialog import NoActionDialog
+from UI.dish_window import DishWindow
 from interfaces.Customer import Customer
 from CustomerUseCases import CustomerUseCases
 from FoodOrderUseCases import FoodNotFoundException, FoodOrder
@@ -112,7 +113,7 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         customer = self.extract_customer()
         printer = get_printer()
         self.food_order.set_customer(customer)
-        self.save(self.food_order, customer)
+        self.save(self.food_order)
 
         self.food_order.reset()
         self.telLineEdit.clear()
@@ -308,10 +309,12 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         for food_item in food_items:
             self.add_suggestion_row(food_item)
         
-    def summary_dialog_window(self, MainWindow):
-        #self.dialog = SummaryWindow()
+    def summary_dialog_window(self):
         self.dialog = SummaryWindow()
         self.dialog.show()
+
+    def edit_dish_window(self, MainWindow):
+        DishWindow().exec_()
 
     def setup_collection_button(self):
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
@@ -372,6 +375,7 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         self.setup_connects()
         self.actionSummary.triggered.connect(self.summary_dialog_window)
+        self.menuEdit.triggered.connect(self.edit_dish_window)
 
     def setup_search_bar(self):
         # Search Bar for suggestion Box
