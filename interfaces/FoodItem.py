@@ -1,6 +1,6 @@
-class FoodItem:
-    def __init__(self, item_number, price, quantity, description="", description_chinese=""):
-        self.item_number = item_number
+class Dish:
+    def __init__(self, id, price, quantity, description="", description_chinese=""):
+        self.id = id
         self.unit_price = price
         self.description = description
         self.description_chinese = description_chinese

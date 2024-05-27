@@ -38,7 +38,7 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
 
     def refresh_display(self):
         self.tableWidget.setRowCount(0)
-        for i in self.food_order.get_all_food_items():
+        for i in self.food_order.get_all_dishes():
             self.add_food_row(i)
         self.totalPriceDisplayLabel.setText(
             "{:,.2f}".format(self.food_order.get_total_price()))
@@ -282,13 +282,13 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.suggest_table_widget.setHorizontalHeaderItem(3, item3)
         header.setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)        
         
-    def add_suggestion_row(self, food_item):
-        if food_item is not None:
+    def add_suggestion_row(self, dish):
+        if dish is not None:
             self.suggest_table_widget.insertRow(self.suggest_table_widget.rowCount())
-            food_info_to_display = (food_item.item_number,
-                                    food_item.description,
-                                    food_item.description_chinese,
-                                    food_item.display_price_string())
+            food_info_to_display = (dish.id,
+                                    dish.description,
+                                    dish.description_chinese,
+                                    dish.display_price_string())
             for i in range(self.suggest_table_widget.columnCount()):
                 item = QtWidgets.QTableWidgetItem(
                     str(food_info_to_display[i]) if food_info_to_display[i] else "")
@@ -298,16 +298,16 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
             self.suggest_table_widget.scrollToBottom()
 
     def update_suggestion_box_by_id(self, id):
-        food_items = DbDish.retrieve_dishes_by_id(id)
+        dishes = DbDish.retrieve_dishes_by_id(id)
         self.suggest_table_widget.setRowCount(0)
-        for food_item in food_items:
-            self.add_suggestion_row(food_item)
+        for dish in dishes:
+            self.add_suggestion_row(dish)
 
     def update_suggestion_box(self, text):
-        food_items = DbDish.retrieve_dishes_by_description(text)
+        dishes = DbDish.retrieve_dishes_by_description(text)
         self.suggest_table_widget.setRowCount(0)
-        for food_item in food_items:
-            self.add_suggestion_row(food_item)
+        for dish in dishes:
+            self.add_suggestion_row(dish)
         
     def summary_dialog_window(self):
         self.dialog = SummaryWindow()

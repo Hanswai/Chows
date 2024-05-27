@@ -1,6 +1,6 @@
 """ A Bunch of ultity functions to interface with DB"""
 
-from interfaces.FoodItem import FoodItem
+from interfaces.FoodItem import Dish
 import sqlite3 as db
 from db_variables import CHOWS_MAIN_DB
 
@@ -21,33 +21,33 @@ class DbDish:
     def retrieve_dishes_by_id(sub_id):
         connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
-        food_items = []
+        dishes = []
         with connection:
             c = connection.cursor()
             sql_query_string = "SELECT * FROM DISH WHERE ID LIKE ?||'%'"
             c.execute(sql_query_string, (sub_id,))
             rows = c.fetchall()
             for row in rows:
-                food_items.append(FoodItem(row['ID'], float(row['PRICE']), 1, row['DESCRIPTION'], row['DESCRIPTION_CHINESE']))
-        return food_items
+                dishes.append(Dish(row['ID'], float(row['PRICE']), 1, row['DESCRIPTION'], row['DESCRIPTION_CHINESE']))
+        return dishes
 
     @staticmethod
     def retrieve_dishes_by_description(text):
         connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
-        food_items = []
+        dishes = []
         with connection:
             c = connection.cursor()
             sql_query_string = "SELECT * FROM DISH WHERE DESCRIPTION LIKE '%'||?||'%'"
             c.execute(sql_query_string, (text,))
             rows = c.fetchall()
             for row in rows:
-                food_items.append(FoodItem(row['ID'], float(row['PRICE']), 1, row['DESCRIPTION'], row['DESCRIPTION_CHINESE']))
-        return food_items
+                dishes.append(Dish(row['ID'], float(row['PRICE']), 1, row['DESCRIPTION'], row['DESCRIPTION_CHINESE']))
+        return dishes
 
 
     @staticmethod
-    def create_dish(id, description, description_chinese, price):
+    def create_dish(dish: Dish):
         """ Creates a row if id has not been created."""
         connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
@@ -55,10 +55,10 @@ class DbDish:
         with connection:
             c = connection.cursor()
             try:
-                insert_new_food_item = (id, description, description_chinese, price)
+                insert_new_dishes = (dish.id, dish.description, dish.description_chinese, dish.unit_price)
                 c.execute("""   INSERT INTO DISH (ID, DESCRIPTION, DESCRIPTION_CHINESE, PRICE) 
                                 VALUES (?, ?, ?, ?) """, 
-                            insert_new_food_item)
+                            insert_new_dishes)
 
             except db.IntegrityError as e:
                 raise e
@@ -73,10 +73,10 @@ class DbDish:
         with connection:
             c = connection.cursor()
             try:
-                update_food_item_data = (description, description_chinese, price, id)
+                update_dish_data = (description, description_chinese, price, id)
                 c.execute("""   UPDATE DISH SET DESCRIPTION = ?, DESCRIPTION_CHINESE = ? , PRICE = ? where ID = ?
                                 """, 
-                            update_food_item_data)
+                            update_dish_data)
             except db.IntegrityError as e:
                 raise e
             connection.commit()

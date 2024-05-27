@@ -1,5 +1,5 @@
 from DbDishInterface import DbDish
-from interfaces.FoodItem import FoodItem
+from interfaces.FoodItem import Dish
 import sqlite3 as db
 from db_variables import CHOWS_MAIN_DB
 from enum import Enum
@@ -28,26 +28,26 @@ class FoodNotFoundException(Exception):
 
 class FoodOrder:
     def __init__(self):
-        self.retreived_food_items = [] # This is acting like a cache - I can use the python built in cache rather than managing it myself.
-        self.ordered_food_items = []
+        self.retreived_dishes = [] # This is acting like a cache - I can use the python built in cache rather than managing it myself.
+        self.ordered_dishes = []
         self.delivery_method = DeliveryMethod.NONE
         self.customer = None
         self.order_id = None
 
     def reset(self):
-        self.retreived_food_items.clear()
-        self.ordered_food_items.clear()
+        self.retreived_dishes.clear()
+        self.ordered_dishes.clear()
         self.delivery_method = DeliveryMethod.NONE
 
-    def add_to_food_order(self, food_item):
-        if food_item is None:
+    def add_to_food_order(self, dish: Dish):
+        if dish is None:
             print("Why are you giving me a None?")
             return
-        result = next((x for x in self.ordered_food_items if x.item_number == food_item.item_number), None)
+        result = next((x for x in self.ordered_dishes if x.item_number == dish.item_number), None)
         if result:
             result.quantity += 1
         else:
-            self.ordered_food_items.append(food_item)
+            self.ordered_dishes.append(dish)
 
     def set_delivery_method(self, delivery_method_string):
         if delivery_method_string == "COLLECTION":
@@ -62,20 +62,20 @@ class FoodOrder:
     def set_customer(self, customer):
         self.customer = customer
 
-    def get_all_food_items(self):
-        return self.ordered_food_items
+    def get_all_dishes(self):
+        return self.ordered_dishes
     
     def get_total_price(self):
         sum = 0
-        for i in self.ordered_food_items:
+        for i in self.ordered_dishes:
             sum += i.get_total_price()
         return sum
     
     def get_food_item(self, food_id):
         if food_id:
             # check to see if I have retrieved it already
-            if len(self.retreived_food_items) > 0:
-                result = next((x for x in self.retreived_food_items if x.item_number == food_id), None)
+            if len(self.retreived_dishes) > 0:
+                result = next((x for x in self.retreived_dishes if x.item_number == food_id), None)
                 if result:
                     return result
             # Otherwise retrieve from db.
@@ -90,7 +90,7 @@ class FoodOrder:
     #
 
     def save_order_to_db(self):
-        if len(self.ordered_food_items) == 0:
+        if len(self.ordered_dishes) == 0:
             return 
         connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
@@ -106,8 +106,8 @@ class FoodOrder:
 
             self.order_id = c.lastrowid
             insert_items_order_db = []
-            for food_item in self.ordered_food_items:
-                insert_items_order_db.append((  food_item.item_number,
+            for food_item in self.ordered_dishes:
+                insert_items_order_db.append((  food_item.id,
                                                 self.order_id,
                                                 food_item.quantity,
                                                 food_item.note))
@@ -126,7 +126,7 @@ class FoodOrder:
     #         c.execute("SELECT * FROM DISH WHERE ID = ?", (food_id,))
     #         result = c.fetchone()
     #         if result:
-    #             food_item = FoodItem(result['ITEM_ID'], float(result['PRICE']), 1, result['DESCRIPTION'], result['DESCRIPTION_CHINESE'])
+    #             food_item = FoodItem(result['ID'], float(result['PRICE']), 1, result['DESCRIPTION'], result['DESCRIPTION_CHINESE'])
     #             self.retreived_food_items.append(food_item)
     #             return food_item
     #     raise FoodNotFoundException(food_id)

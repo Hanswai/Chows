@@ -138,7 +138,7 @@ class SummaryWindow(QtWidgets.QDialog):
         # TODO: Populate Table based on date range.
         date_to_search = datetime.now().date()
         self.grandTotalDisplayLabel.setText(str(DbOrders.retrieve_total_price_by_date(date_to_search)))
-        food_item_to_qty = DbOrders.retrieve_food_items_and_qty_by_date(date_to_search)
+        food_item_to_qty = DbOrders.retrieve_dishes_and_qty_by_date(date_to_search)
         for row in food_item_to_qty.values():
             self.add_row(row)
 

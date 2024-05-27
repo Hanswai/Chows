@@ -6,7 +6,7 @@ import datetime
 
 from FoodOrderUseCases import DeliveryMethod, FoodOrder
 from interfaces.Customer import Customer
-from interfaces.FoodItem import FoodItem
+from interfaces.FoodItem import Dish
 
 TEXT_SIZE_DOUBLE = TXT_SIZE + b'\x11'
 SMALL_SIZE_COMMAND = TXT_SIZE + six.int2byte(0)
@@ -54,7 +54,7 @@ def print_collection_chinese_order(printer, food_order: FoodOrder):
     # Set Chinese codepage
     printer._raw(ESC + b'\x52' + six.int2byte(15))
     # 
-    for food in food_order.ordered_food_items:
+    for food in food_order.ordered_dishes:
         printer._raw(TEXT_SIZE_DOUBLE)
         qty = str(food.quantity).ljust(3,  ' ')
         chinese = food.description_chinese.ljust(13,  ' ')
@@ -92,7 +92,7 @@ def print_english_order(printer: Usb, food_order: FoodOrder):
     printer.textln('COLLECTION')
     print_line_divider_center_small(printer)
     printer._raw(LEFT)
-    for food in food_order.ordered_food_items:
+    for food in food_order.ordered_dishes:
         number = str(food.item_number).ljust(6,  ' ')
         qty = str(food.quantity).ljust(2,  ' ')
         dish = food.description.ljust(13*2,  ' ')

@@ -22,23 +22,29 @@ class DishWindow(QDialog):
         self.input_layout.addLayout(form_layout)
         self.input_layout.addLayout(category_layout)
         self.input_layout.addLayout(button_layout)
-
+        self.display_label = self.build_display_text()
         dish_table = self.build_suggestion_table()
+
         self.main_layout.addLayout(self.input_layout)
+        self.main_layout.addWidget(self.display_label)
         self.main_layout.addWidget(dish_table)
         self.setLayout(self.main_layout)
         
-
+    def build_display_text(self):
+        """ This is useful for have a small QTextLabel to show any error messages"""
+        return QLabel(self)
 
     def build_dialog_buttons(self):
         # Create a QHBoxLayout for the buttons
         button_layout = QVBoxLayout()
 
-        # Create QPushButton for saving and canceling
+        # Create QPushButton
         save_button = QPushButton("Save", self)
-        #save_button.clicked.connect(self.accept)  # accept() closes the dialog and returns QDialog.Accepted
-        cancel_button = QPushButton("Cancel", self)
-        #cancel_button.clicked.connect(self.reject)  # reject() closes the dialog and returns QDialog.Rejected
+        save_button.clicked.connect(self.handle_save_dish)
+        save_button.setDefault(False)
+
+        cancel_button = QPushButton("Close", self)
+        cancel_button.setDefault(True)
 
         # Add buttons to the button layout
         button_layout.addWidget(save_button)
@@ -89,7 +95,40 @@ class DishWindow(QDialog):
         return table_widget
         
     def handle_save_dish(self):
-        pass
+        # Check inputs
+
+        # Send error message
+        message = ""
+        error = False
+        if self.dish_number_input.text() == "":
+            message += "Missing Dish Number. "
+            error = True
+
+        if self.dish_name_input.text() == "":
+            message += "Missing Dish Name. "
+            error = True
+
+        if self.dish_chinese_input.text() == "":
+            message += "Missing Chinese Dish Name. "
+            error = True
+
+        if self.price_input.text() == "":
+            message += "Missing Price. "
+            error = True
+
+        try:
+            float(self.price_input.text())
+        except ValueError:
+            message += "Price needs to be a number. (e.g. 10, 10.0, 10.50)"
+            error = True
+        
+        if not error:
+            self.display_label.setText(message if error else "Saving...")
+            dish_to_save = Dish(self.dish_number_input.text, self.price_input.text, 1, self.dish_name_input.text, self.dish_chinese_input)
+            DbDish.create_dish(dish_to_save)
+            self.display_label.setText("Success!")
+
+
 
     def handle_dish_number_enter(self):
         if self.dish_number_input.text() != "":

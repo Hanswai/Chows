@@ -30,10 +30,10 @@ class DbOrders:
         return 0
     
     @staticmethod
-    def retrieve_food_items_and_qty_by_date(date):
+    def retrieve_dishes_and_qty_by_date(date):
         connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
-        food_item_id_to_qty = {}
+        dish_id_to_qty = {}
         with connection:
             c = connection.cursor()
             sql_query_string = """            
@@ -52,11 +52,11 @@ class DbOrders:
             c.execute(sql_query_string, (date,))
             rows = c.fetchall()
             for row in rows:
-                if food_item_id_to_qty.get(row["FOOD_ITEM_ID"]) is not None:
-                    food_item_id_to_qty.get(row["FOOD_ITEM_ID"]).quantity += int(row["QUANTITY"])
+                if dish_id_to_qty.get(row["FOOD_ITEM_ID"]) is not None:
+                    dish_id_to_qty.get(row["FOOD_ITEM_ID"]).quantity += int(row["QUANTITY"])
                 else:
-                    food_item_id_to_qty[row["FOOD_ITEM_ID"]] = SummaryFoodItem(row["FOOD_ITEM_ID"], int(row["QUANTITY"]), row["DESCRIPTION"], row["DESCRIPTION_CHINESE"])
-        return food_item_id_to_qty
+                    dish_id_to_qty[row["FOOD_ITEM_ID"]] = SummaryFoodItem(row["FOOD_ITEM_ID"], int(row["QUANTITY"]), row["DESCRIPTION"], row["DESCRIPTION_CHINESE"])
+        return dish_id_to_qty
     
     @staticmethod
     def retrieve_total_price_by_date_range(start_date, end_date):
