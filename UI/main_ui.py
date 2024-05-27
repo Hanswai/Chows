@@ -271,7 +271,7 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.Fixed)
         item1 = QtWidgets.QTableWidgetItem()
         item1.setText("Dish")
-        self.suggest_table_widget.setHorizontalHeaderItem(1, item1)
+        self.suggest_table_widget.setHorizontalHeaderItem(1, item1) 
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
         item2 = QtWidgets.QTableWidgetItem()
         item2.setText("食品")

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QVBoxLayout, QFormLayout, QHBoxLayout, QPushButton, QLabel, QDialog, QLineEdit
+from PyQt5.QtWidgets import *
 
 from datetime import datetime
 
@@ -15,11 +15,16 @@ class DishWindow(QDialog):
         self.input_layout = QHBoxLayout()
         form_layout = self.build_dish_input_form()
         button_layout = self.build_dialog_buttons()
+        category_layout = self.build_category_grid_input()
         self.input_layout.addLayout(form_layout)
+        self.input_layout.addLayout(category_layout)
         self.input_layout.addLayout(button_layout)
 
+        dish_table = self.build_suggestion_table()
         self.main_layout.addLayout(self.input_layout)
+        self.main_layout.addWidget(dish_table)
         self.setLayout(self.main_layout)
+        
 
 
     def build_dialog_buttons(self):
@@ -53,7 +58,30 @@ class DishWindow(QDialog):
         form_layout.addRow("Chinese Dish Name:", self.dish_chinese_input)
         form_layout.addRow("Price:", self.price_input)
         return form_layout
+    
+    def build_category_grid_input(self):
+        grid_layout = QGridLayout()
 
+        num_col = 3
+        categories = ['Appetisers','Beef', 'Chicken', 'Duck', 'Rice', 'Noodles', 'Soup']
+        for i, category in enumerate(categories):
+            column = i/num_col
+            row = i % num_col
+            checkbox = QCheckBox(self)
+            checkbox.setText(category)
+            grid_layout.addWidget(checkbox, row, column)
+        return grid_layout
+
+    def build_suggestion_table(self):
+        table_widget = QTableWidget(self)
+
+        table_widget.setColumnCount(4)
+        table_widget.setRowCount(0)
+
+        column_names = ['No.', 'Dish', '食品', 'Price']
+        table_widget.setHorizontalHeaderLabels(column_names)
+        table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        return table_widget
         
     def handle_save_dish(self):
         pass
