@@ -24,11 +24,11 @@ class DbFoodItems:
         food_items = []
         with connection:
             c = connection.cursor()
-            sql_query_string = "SELECT * FROM FOOD_ITEM WHERE ITEM_ID LIKE ?||'%'"
+            sql_query_string = "SELECT * FROM DISH WHERE ID LIKE ?||'%'"
             c.execute(sql_query_string, (sub_id,))
             rows = c.fetchall()
             for row in rows:
-                food_items.append(FoodItem(row['ITEM_ID'], float(row['PRICE']), 1, row['DESCRIPTION'], row['DESCRIPTION_CHINESE']))
+                food_items.append(FoodItem(row['ID'], float(row['PRICE']), 1, row['DESCRIPTION'], row['DESCRIPTION_CHINESE']))
         return food_items
 
     @staticmethod
@@ -38,11 +38,11 @@ class DbFoodItems:
         food_items = []
         with connection:
             c = connection.cursor()
-            sql_query_string = "SELECT * FROM FOOD_ITEM WHERE DESCRIPTION LIKE '%'||?||'%'"
+            sql_query_string = "SELECT * FROM DISH WHERE DESCRIPTION LIKE '%'||?||'%'"
             c.execute(sql_query_string, (text,))
             rows = c.fetchall()
             for row in rows:
-                food_items.append(FoodItem(row['ITEM_ID'], float(row['PRICE']), 1, row['DESCRIPTION'], row['DESCRIPTION_CHINESE']))
+                food_items.append(FoodItem(row['ID'], float(row['PRICE']), 1, row['DESCRIPTION'], row['DESCRIPTION_CHINESE']))
         return food_items
 
 
@@ -56,7 +56,7 @@ class DbFoodItems:
             c = connection.cursor()
             try:
                 insert_new_food_item = (id, description, description_chinese, price)
-                c.execute("""   INSERT INTO FOOD_ITEM (ITEM_ID, DESCRIPTION, DESCRIPTION_CHINESE, PRICE) 
+                c.execute("""   INSERT INTO DISH (ID, DESCRIPTION, DESCRIPTION_CHINESE, PRICE) 
                                 VALUES (?, ?, ?, ?) """, 
                             insert_new_food_item)
 
@@ -74,7 +74,7 @@ class DbFoodItems:
             c = connection.cursor()
             try:
                 update_food_item_data = (description, description_chinese, price, id)
-                c.execute("""   UPDATE FOOD_ITEM SET DESCRIPTION = ?, DESCRIPTION_CHINESE = ? , PRICE = ? where ITEM_ID = ?
+                c.execute("""   UPDATE DISH SET DESCRIPTION = ?, DESCRIPTION_CHINESE = ? , PRICE = ? where ID = ?
                                 """, 
                             update_food_item_data)
             except db.IntegrityError as e:
