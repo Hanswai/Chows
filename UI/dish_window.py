@@ -2,6 +2,9 @@ from PyQt5.QtWidgets import *
 
 from datetime import datetime
 
+from DbFoodItemInterface import *
+from FoodOrderUseCases import FoodNotFoundException
+
 
 class DishWindow(QDialog):
 
@@ -33,9 +36,9 @@ class DishWindow(QDialog):
 
         # Create QPushButton for saving and canceling
         save_button = QPushButton("Save", self)
-        save_button.clicked.connect(self.accept)  # accept() closes the dialog and returns QDialog.Accepted
+        #save_button.clicked.connect(self.accept)  # accept() closes the dialog and returns QDialog.Accepted
         cancel_button = QPushButton("Cancel", self)
-        cancel_button.clicked.connect(self.reject)  # reject() closes the dialog and returns QDialog.Rejected
+        #cancel_button.clicked.connect(self.reject)  # reject() closes the dialog and returns QDialog.Rejected
 
         # Add buttons to the button layout
         button_layout.addWidget(save_button)
@@ -57,6 +60,8 @@ class DishWindow(QDialog):
         form_layout.addRow("Dish Name:", self.dish_name_input)
         form_layout.addRow("Chinese Dish Name:", self.dish_chinese_input)
         form_layout.addRow("Price:", self.price_input)
+
+        self.dish_number_input.returnPressed.connect(self.handle_dish_number_enter)
         return form_layout
     
     def build_category_grid_input(self):
@@ -85,3 +90,15 @@ class DishWindow(QDialog):
         
     def handle_save_dish(self):
         pass
+
+    def handle_dish_number_enter(self):
+        if self.dish_number_input.text() != "":
+            dishes = DbFoodItems.retrieve_food_items_by_id(self.dish_number_input.text())
+            if len(dishes) == 0:   # New food 
+                print("Dish not found, creata new food on save")
+            else:
+                dish = dishes[0]
+                self.dish_name_input.setText(dish.description)
+                self.dish_chinese_input.setText(dish.description_chinese)
+                self.price_input.setText(str(dish.unit_price))
+            
