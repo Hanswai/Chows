@@ -5,10 +5,9 @@ from datetime import datetime
 from DbDishInterface import *
 from FoodOrderUseCases import FoodNotFoundException
 
-
 class DishWindow(QDialog):
 
-
+    ## UI Stuff
     def __init__(self, parent=None):
         super().__init__(parent)        
         self.setWindowTitle("Edit Dish")
@@ -23,11 +22,11 @@ class DishWindow(QDialog):
         self.input_layout.addLayout(category_layout)
         self.input_layout.addLayout(button_layout)
         self.display_label = self.build_display_text()
-        dish_table = self.build_suggestion_table()
-
+        self.dish_table = self.build_suggestion_table()
+        
         self.main_layout.addLayout(self.input_layout)
         self.main_layout.addWidget(self.display_label)
-        self.main_layout.addWidget(dish_table)
+        self.main_layout.addWidget(self.dish_table)
         self.setLayout(self.main_layout)
         
     def build_display_text(self):
@@ -40,7 +39,7 @@ class DishWindow(QDialog):
 
         # Create QPushButton
         save_button = QPushButton("Save", self)
-        save_button.clicked.connect(self.handle_save_dish)
+        save_button.clicked.connect(self.handle_save_button_pressed)
         save_button.setDefault(False)
 
         cancel_button = QPushButton("Close", self)
@@ -68,6 +67,8 @@ class DishWindow(QDialog):
         form_layout.addRow("Price:", self.price_input)
 
         self.dish_number_input.returnPressed.connect(self.handle_dish_number_enter)
+        self.dish_number_input.textChanged.connect(self.handle_dish_number_change)
+
         return form_layout
     
     def build_category_grid_input(self):
@@ -92,12 +93,11 @@ class DishWindow(QDialog):
         column_names = ['No.', 'Dish', '食品', 'Price']
         table_widget.setHorizontalHeaderLabels(column_names)
         table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        table_widget.cellDoubleClicked.connect(self.handle_dish_clicked)
         return table_widget
         
-    def handle_save_dish(self):
-        # Check inputs
-
-        # Send error message
+    # Handlers and Business Logic
+    def handle_save_button_pressed(self):
         message = ""
         error = False
         if self.dish_number_input.text() == "":
@@ -123,15 +123,19 @@ class DishWindow(QDialog):
             error = True
         
         if not error:
-            self.display_label.setText(message if error else "Saving...")
             dish_to_save = Dish(self.dish_number_input.text(), self.price_input.text(), 1, self.dish_name_input.text(), self.dish_chinese_input.text())
             try:
                 DbDish.create_dish(dish_to_save)
                 self.display_label.setText("New Dish Created!")
-
+                self.display_label.setStyleSheet("color: green;")
             except DuplicateFoodException:
                 DbDish.update_dish(dish_to_save)
                 self.display_label.setText("Dish Updated!")
+                self.display_label.setStyleSheet("color: green;")
+        else:
+            self.display_label.setText(error)
+            self.display_label.setStyleSheet("color: red;")
+
 
 
 
@@ -142,7 +146,51 @@ class DishWindow(QDialog):
                 print("Dish not found, creata new food on save")
             else:
                 dish = dishes[0]
-                self.dish_name_input.setText(dish.description)
-                self.dish_chinese_input.setText(dish.description_chinese)
-                self.price_input.setText(str(dish.unit_price))
-            
+                self.set_dish_text_inputs(dish)
+
+    def set_dish_text_inputs(self, dish: Dish):
+        self.dish_number_input.setText(dish.id)
+        self.dish_name_input.setText(dish.description)
+        self.dish_chinese_input.setText(dish.description_chinese)
+        self.price_input.setText(str(dish.unit_price))
+    
+    def handle_dish_number_change(self):
+        # Refresh
+        self.dish_table.setRowCount(0)
+        self.display_label.setText("")
+
+        if self.dish_number_input.text() != "":
+            # retrieve autofill dishes by id
+            dishes  = DbDish.retrieve_dishes_by_id(self.dish_number_input.text())
+            # Populate table
+            for dish in dishes:
+                self.dish_table.insertRow(self.dish_table.rowCount())
+                dish_to_display = (dish.id,
+                                    dish.description,
+                                    dish.description_chinese,
+                                    dish.unit_price)
+                
+                for i in range(self.dish_table.columnCount()):
+                    # Each column is individually populated
+                    item = QTableWidgetItem(str(dish_to_display[i]) if dish_to_display[i] else "")
+                    self.dish_table.setItem(self.dish_table.rowCount()-1, i, item)
+                self.dish_table.scrollToBottom()
+            # Set up the items so that it can be clicked on
+        else:
+            # reset_table
+            pass
+
+    def handle_dish_clicked(self, row, column):
+        print(f' row: {str(row)}, column {str(column)}')
+        id = self.dish_table.item(row, 0).text()
+        description = self.dish_table.item(row, 1).text()
+        chinese = self.dish_table.item(row, 2).text()
+        price = self.dish_table.item(row, 3).text()
+        dish = Dish(id, price, 1, description, chinese)
+        self.set_dish_text_inputs(dish)
+
+    def handle_chinese_clicked(self):
+        # Bring up a display (grid) of chinese characters
+        
+        # When clicked, add onto the self.dish_chinese_input value.
+        pass
