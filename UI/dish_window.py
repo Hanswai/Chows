@@ -93,6 +93,8 @@ class DishWindow(QDialog):
         column_names = ['No.', 'Dish', '食品', 'Price']
         table_widget.setHorizontalHeaderLabels(column_names)
         table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        table_widget.setSelectionMode(QAbstractItemView.NoSelection)
         table_widget.cellDoubleClicked.connect(self.handle_dish_clicked)
         return table_widget
         
