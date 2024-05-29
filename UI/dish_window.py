@@ -9,7 +9,7 @@ class DishWindow(QDialog):
 
     ## UI Stuff
     def __init__(self, parent=None):
-        super().__init__(parent)        
+        super().__init__(parent)
         self.setWindowTitle("Edit Dish")
 
         self.main_layout = QVBoxLayout()
@@ -17,13 +17,13 @@ class DishWindow(QDialog):
         self.input_layout = QHBoxLayout()
         form_layout = self.build_dish_input_form()
         button_layout = self.build_dialog_buttons()
-        category_layout = self.build_category_grid_input()
+        self.category_layout = self.build_category_grid_input()
         self.input_layout.addLayout(form_layout)
-        self.input_layout.addLayout(category_layout)
+        self.input_layout.addLayout(self.category_layout)
         self.input_layout.addLayout(button_layout)
         self.display_label = self.build_display_text()
         self.dish_table = self.build_suggestion_table()
-        
+
         self.main_layout.addLayout(self.input_layout)
         self.main_layout.addWidget(self.display_label)
         self.main_layout.addWidget(self.dish_table)
@@ -79,8 +79,7 @@ class DishWindow(QDialog):
         for i, category in enumerate(categories):
             column = i/num_col
             row = i % num_col
-            checkbox = QCheckBox(self)
-            checkbox.setText(category)
+            checkbox = QCheckBox(category, self)
             grid_layout.addWidget(checkbox, row, column)
         return grid_layout
 
@@ -126,16 +125,16 @@ class DishWindow(QDialog):
         
         if not error:
             dish_to_save = Dish(self.dish_number_input.text(), self.price_input.text(), 1, self.dish_name_input.text(), self.dish_chinese_input.text())
+            # TODO: Collect the marked categories
+            categories = self.extract_categories()
             try:
                 DbDish.create_dish(dish_to_save)
                 self.display_label.setText("New Dish Created!")
-                self.display_label.setStyleSheet("color: green;")
             except DuplicateFoodException:
                 DbDish.update_dish(dish_to_save)
                 self.display_label.setText("Dish Updated!")
-                self.display_label.setStyleSheet("color: green;")
         else:
-            self.display_label.setText(error)
+            self.display_label.setText(message)
             self.display_label.setStyleSheet("color: red;")
 
 
@@ -196,3 +195,13 @@ class DishWindow(QDialog):
         
         # When clicked, add onto the self.dish_chinese_input value.
         pass
+    
+    def extract_categories(self):
+        categories = []
+        checkboxes = (self.category_layout.itemAt(i).widget() for i in range(self.category_layout.count()))
+        for checkbox in checkboxes:
+            if isinstance(checkbox, QCheckBox):
+                print(f'{checkbox.text()} : {checkbox.isChecked()}')
+                if checkbox.isChecked():
+                    categories.append(checkbox.text())
+        return categories
