@@ -545,7 +545,7 @@ QCheckBox::indicator
 
 QCheckBox::indicator:checked
 {
-    image:url(://checkbox.png);
+    image:url(://UI/style_images/check_box_filled.png);
     border: 2px solid #00ff00;
 
 }

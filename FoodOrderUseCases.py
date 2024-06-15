@@ -79,7 +79,7 @@ class FoodOrder:
                 if result:
                     return result
             # Otherwise retrieve from db.
-            dish_from_db =  DbDish.retrieve_dishes_by_id(food_id)
+            dish_from_db =  DbDish.retrieve_dishes_by_id_like(food_id)
             if len(dish_from_db) == 0:
                 raise FoodNotFoundException(food_id)
             else:

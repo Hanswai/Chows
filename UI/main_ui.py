@@ -298,7 +298,7 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
             self.suggest_table_widget.scrollToBottom()
 
     def update_suggestion_box_by_id(self, id):
-        dishes = DbDish.retrieve_dishes_by_id(id)
+        dishes = DbDish.retrieve_dishes_by_id_like(id)
         self.suggest_table_widget.setRowCount(0)
         for dish in dishes:
             self.add_suggestion_row(dish)

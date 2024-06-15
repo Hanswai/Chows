@@ -18,7 +18,7 @@ class DuplicateFoodException(Exception):
 class DbDish:
   
     @staticmethod
-    def retrieve_dishes_by_id(sub_id):
+    def retrieve_dishes_by_id_like(sub_id):
         connection = db.connect(CHOWS_MAIN_DB)
         connection.row_factory = dict_factory
         dishes = []
@@ -28,8 +28,25 @@ class DbDish:
             c.execute(sql_query_string, (sub_id,))
             rows = c.fetchall()
             for row in rows:
-                dishes.append(Dish(row['ID'], float(row['PRICE']), 1, row['DESCRIPTION'], row['DESCRIPTION_CHINESE']))
+                dish = Dish(row['ID'], float(row['PRICE']), 1, row['DESCRIPTION'], row['DESCRIPTION_CHINESE'])
+                dish.categories = dish.deserialise_categories(row['CATEGORIES'])
+                dishes.append(dish)
         return dishes
+
+    @staticmethod
+    def retrieve_dishes_by_id(id):
+        """ This retrieve dish must match the id exactly"""
+        connection = db.connect(CHOWS_MAIN_DB)
+        connection.row_factory = dict_factory
+        with connection:
+            c = connection.cursor()
+            sql_query_string = "SELECT * FROM DISH WHERE ID = ?;"
+            c.execute(sql_query_string, (id,))
+            row = c.fetchone()
+            # Pretty sure there is a way to use the row_factory to contruct a Dish object :thinking:
+            dish = Dish(row['ID'], float(row['PRICE']), 1, row['DESCRIPTION'], row['DESCRIPTION_CHINESE'])
+            dish.categories = dish.deserialise_categories(row['CATEGORIES'])
+        return dish
 
     @staticmethod
     def retrieve_dishes_by_description(text):
@@ -42,7 +59,9 @@ class DbDish:
             c.execute(sql_query_string, (text,))
             rows = c.fetchall()
             for row in rows:
-                dishes.append(Dish(row['ID'], float(row['PRICE']), 1, row['DESCRIPTION'], row['DESCRIPTION_CHINESE']))
+                dish = Dish(row['ID'], float(row['PRICE']), 1, row['DESCRIPTION'], row['DESCRIPTION_CHINESE'])
+                dish.categories = dish.deserialise_categories(row['CATEGORIES'])
+                dishes.append(dish)
         return dishes
 
 
@@ -55,9 +74,9 @@ class DbDish:
         with connection:
             c = connection.cursor()
             try:
-                insert_new_dishes = (dish.id, dish.description, dish.description_chinese, dish.unit_price)
-                c.execute("""   INSERT INTO DISH(ID, DESCRIPTION, DESCRIPTION_CHINESE, PRICE) 
-                                VALUES (?, ?, ?, ?) """, 
+                insert_new_dishes = (dish.id, dish.description, dish.description_chinese, dish.unit_price, dish.serialise_categories())
+                c.execute("""   INSERT INTO DISH(ID, DESCRIPTION, DESCRIPTION_CHINESE, PRICE, CATEGORIES) 
+                                VALUES (?, ?, ?, ?, ?) """, 
                             insert_new_dishes)
 
             except db.IntegrityError as e:
@@ -73,8 +92,8 @@ class DbDish:
         with connection:
             c = connection.cursor()
             try:
-                update_dish_data = (dish.description, dish.description_chinese, dish.unit_price, dish.id)
-                c.execute("""   UPDATE DISH SET DESCRIPTION = ?, DESCRIPTION_CHINESE = ? , PRICE = ? where ID = ?
+                update_dish_data = (dish.description, dish.description_chinese, dish.unit_price, dish.serialise_categories(), dish.id)
+                c.execute("""   UPDATE DISH SET DESCRIPTION = ?, DESCRIPTION_CHINESE = ? , PRICE = ?, CATEGORIES = ? where ID = ?
                                 """, 
                             update_dish_data)
             except db.IntegrityError as e:

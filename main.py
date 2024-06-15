@@ -6,7 +6,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = ChowsMainWindow()
     MainWindow.show()
-    file = open("UI\Adaptic.qss",'r')
+    file = open("UI\Medize.qss",'r')
     with file:
         qss = file.read()
         app.setStyleSheet(qss)

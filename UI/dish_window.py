@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import *
-
-from datetime import datetime
-
 from DbDishInterface import *
-from FoodOrderUseCases import FoodNotFoundException
+
+
+CATEGORIES = ['Appetisers','Beef', 'Chicken', 'Duck', 'Rice', 'Noodles', 'Soup']
+
 
 class DishWindow(QDialog):
 
@@ -12,25 +12,26 @@ class DishWindow(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Edit Dish")
 
-        self.main_layout = QVBoxLayout()
-
-        self.input_layout = QHBoxLayout()
         form_layout = self.build_dish_input_form()
         button_layout = self.build_dialog_buttons()
         self.category_layout = self.build_category_grid_input()
+
+        self.input_layout = QHBoxLayout()
         self.input_layout.addLayout(form_layout)
         self.input_layout.addLayout(self.category_layout)
         self.input_layout.addLayout(button_layout)
+
         self.display_label = self.build_display_text()
         self.dish_table = self.build_suggestion_table()
 
+        self.main_layout = QVBoxLayout()
         self.main_layout.addLayout(self.input_layout)
         self.main_layout.addWidget(self.display_label)
         self.main_layout.addWidget(self.dish_table)
         self.setLayout(self.main_layout)
         
     def build_display_text(self):
-        """ This is useful for have a small QTextLabel to show any error messages"""
+        """ For showing any error messages"""
         return QLabel(self)
 
     def build_dialog_buttons(self):
@@ -75,8 +76,7 @@ class DishWindow(QDialog):
         grid_layout = QGridLayout()
 
         num_col = 3
-        categories = ['Appetisers','Beef', 'Chicken', 'Duck', 'Rice', 'Noodles', 'Soup']
-        for i, category in enumerate(categories):
+        for i, category in enumerate(CATEGORIES):
             column = i/num_col
             row = i % num_col
             checkbox = QCheckBox(category, self)
@@ -125,8 +125,7 @@ class DishWindow(QDialog):
         
         if not error:
             dish_to_save = Dish(self.dish_number_input.text(), self.price_input.text(), 1, self.dish_name_input.text(), self.dish_chinese_input.text())
-            # TODO: Collect the marked categories
-            categories = self.extract_categories()
+            dish_to_save.categories = self.extract_categories()
             try:
                 DbDish.create_dish(dish_to_save)
                 self.display_label.setText("New Dish Created!")
@@ -142,18 +141,34 @@ class DishWindow(QDialog):
 
     def handle_dish_number_enter(self):
         if self.dish_number_input.text() != "":
-            dishes = DbDish.retrieve_dishes_by_id(self.dish_number_input.text())
+            dishes = DbDish.retrieve_dishes_by_id_like(self.dish_number_input.text())
             if len(dishes) == 0:   # New food 
-                print("Dish not found, creata new food on save")
+                print("Dish not found, create new food on save")
             else:
                 dish = dishes[0]
                 self.set_dish_text_inputs(dish)
+                self.clear_category_grid()
+                self.set_category_grid(dish)
 
     def set_dish_text_inputs(self, dish: Dish):
         self.dish_number_input.setText(dish.id)
         self.dish_name_input.setText(dish.description)
         self.dish_chinese_input.setText(dish.description_chinese)
         self.price_input.setText(str(dish.unit_price))
+    
+    def set_category_grid(self, dish: Dish):
+        for category in dish.categories:
+            i = CATEGORIES.index(category)
+
+            checkbox_to_tick = self.category_layout.itemAt(i).widget()
+            if isinstance(checkbox_to_tick, QCheckBox):
+                checkbox_to_tick.setChecked(True)
+    
+    def clear_category_grid(self):
+        checkboxes = (self.category_layout.itemAt(i).widget() for i in range(self.category_layout.count()))
+        for checkbox in checkboxes:
+            if isinstance(checkbox, QCheckBox):
+                checkbox.setChecked(False)
     
     def handle_dish_number_change(self):
         # Refresh
@@ -162,7 +177,7 @@ class DishWindow(QDialog):
 
         if self.dish_number_input.text() != "":
             # retrieve autofill dishes by id
-            dishes  = DbDish.retrieve_dishes_by_id(self.dish_number_input.text())
+            dishes  = DbDish.retrieve_dishes_by_id_like(self.dish_number_input.text())
             # Populate table
             for dish in dishes:
                 self.dish_table.insertRow(self.dish_table.rowCount())
@@ -170,13 +185,11 @@ class DishWindow(QDialog):
                                     dish.description,
                                     dish.description_chinese,
                                     dish.unit_price)
-                
                 for i in range(self.dish_table.columnCount()):
                     # Each column is individually populated
                     item = QTableWidgetItem(str(dish_to_display[i]) if dish_to_display[i] else "")
                     self.dish_table.setItem(self.dish_table.rowCount()-1, i, item)
                 self.dish_table.scrollToBottom()
-            # Set up the items so that it can be clicked on
         else:
             # reset_table
             pass
@@ -184,14 +197,13 @@ class DishWindow(QDialog):
     def handle_dish_clicked(self, row, column):
         print(f' row: {str(row)}, column {str(column)}')
         id = self.dish_table.item(row, 0).text()
-        description = self.dish_table.item(row, 1).text()
-        chinese = self.dish_table.item(row, 2).text()
-        price = self.dish_table.item(row, 3).text()
-        dish = Dish(id, price, 1, description, chinese)
+        dish = DbDish.retrieve_dishes_by_id(id)
         self.set_dish_text_inputs(dish)
+        self.clear_category_grid()
+        self.set_category_grid(dish)
 
     def handle_chinese_clicked(self):
-        # Bring up a display (grid) of chinese characters
+        # Bring up a display (grid) of chinese characters so that the user doesn't have to type chinese characters
         
         # When clicked, add onto the self.dish_chinese_input value.
         pass
