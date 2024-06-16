@@ -3,6 +3,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from ChowsPrinter import get_printer, print_english_order
 from UI.dialog import NoActionDialog
 from UI.dish_window import DishWindow
+from UI.customer_window import CustomerWindow
 from interfaces.Customer import Customer
 from CustomerUseCases import CustomerUseCases
 from FoodOrderUseCases import FoodNotFoundException, FoodOrder
@@ -316,6 +317,11 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
     def edit_dish_window(self, MainWindow):
         DishWindow().exec_()
 
+
+    def edit_customer_window(self, MainWindow):
+        CustomerWindow().exec_()
+        
+
     def setup_collection_button(self):
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setObjectName(u"pushButton")
@@ -335,6 +341,8 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         MainWindow.resize(1024, 720)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.setup_menu(MainWindow)
 
         self.setup_contact_form()
         self.setup_order_table()
@@ -347,35 +355,31 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         # Search Bar for suggestion Box
         self.setup_search_bar()
 
-        self.actionSummary = QtWidgets.QAction(MainWindow)
-        self.actionSummary.setObjectName(u"actionSummary")
-        self.actionEditMenu = QtWidgets.QAction(MainWindow)
-        self.actionEditMenu.setObjectName(u"actionEditMenu")
-
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1024, 21))
-        self.menuEdit = QtWidgets.QMenu(self.menubar)
-        self.menuEdit.setObjectName(u"menuEdit")  
-        self.menuView = QtWidgets.QMenu(self.menubar)
-        self.menuView.setObjectName(u"menuView")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName(u"statusbar")
-        MainWindow.setStatusBar(self.statusbar)
-
-        self.menubar.addAction(self.menuView.menuAction())
-        self.menuView.addAction(self.actionSummary)
-        self.menubar.addAction(self.menuEdit.menuAction())
-        self.menuEdit.addAction(self.actionEditMenu)
-        self.menuEdit.setTitle("Edit")
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         self.setup_connects()
-        self.actionSummary.triggered.connect(self.summary_dialog_window)
-        self.menuEdit.triggered.connect(self.edit_dish_window)
+
+    def setup_menu(self, MainWindow):
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+
+        view_menu = self.menubar.addMenu('View')
+        view_summary_action = QtWidgets.QAction('Summary', self, checkable=True)
+        view_summary_action.setStatusTip('View the summary of day/month/year.')
+        view_menu.addAction(view_summary_action)
+
+        view_summary_action.triggered.connect(self.summary_dialog_window)
+
+
+        edit_menu = self.menubar.addMenu('Edit')
+        edit_dish_action = QtWidgets.QAction('Edit Dish', self)
+        edit_menu.addAction(edit_dish_action)
+        edit_dish_action.triggered.connect(self.edit_dish_window)
+
+        edit_customer_action = QtWidgets.QAction('Edit Customer', self)
+        edit_menu.addAction(edit_customer_action)
+        edit_customer_action.triggered.connect(self.edit_customer_window)
+
 
     def setup_search_bar(self):
         # Search Bar for suggestion Box
@@ -391,9 +395,6 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle("Wai Wai POS")
-
-        self.actionSummary.setText("Summary")
-        self.actionEditMenu.setText("Edit Menu")
 
         self.teleLabel.setText("Phone No: ")
         self.nameLabel.setText("Name: ")
@@ -422,4 +423,4 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
 
         self.totalPriceLabel.setText(_translate("MainWindow", u"Total Price: £", None))
         self.totalPriceDisplayLabel.setText("")
-        self.menuView.setTitle(_translate("MainWindow", u"View", None))
+

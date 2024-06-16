@@ -26,6 +26,7 @@ if not usbLibPath1 in os.environ["PATH"]:
 def get_printer():
     try:
         return Usb(0x0483, 0x5743)
+        # TODO: Find a way to programmatically fetch the vendor id and product id
     except:
         print("Not Printer found, going to dummy mode")
         return Dummy()
@@ -111,3 +112,11 @@ def print_english_order(printer: Usb, food_order: FoodOrder):
     printer._raw("TOTAL: ")
     printer._raw(str(price).rjust(7,  ' '))
     printer.cut()
+
+def print_delivery_chinese_order():
+    # TODO: Implement Delivery Chinese Order. Use Collection Chinese Order as the base and then add address at the top.
+    pass
+
+def print_delivery_english_order():
+    # TODO: Implement Delivery English Order. Use Collection English Order as the base and then add address at the top.
+    pass
