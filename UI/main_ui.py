@@ -22,6 +22,7 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.food_order = FoodOrder()
         self.setupUi(self)
         self.retranslateUi(self)
+        self.showMaximized()
 
     def display_contact(self, contact):
         self.telLineEdit.setText(contact.telephone)
@@ -29,6 +30,15 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.address1LineEdit.setText(contact.address1)
         self.address2LineEdit.setText(contact.address2)
         self.postcodeLineEdit.setText(contact.postcode)
+    
+    def display_contact_new(self, contact: Customer):
+        self.phone_number_input.setText(contact.telephone)
+        self.name_input.setText(contact.name)
+        self.address1_input.setText(contact.address1)
+        self.address2_input.setText(contact.address2)
+        self.postcode_input.setText(contact.postcode)
+        self.customer_notes_input.setText(contact.comments)
+        
 
     def clear_contact_display(self):
         self.nameLineEdit.clear()
@@ -36,6 +46,14 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.address2LineEdit.clear()
         self.postcodeLineEdit.clear()
         self.noteLineEdit.clear()
+
+    def clear_contact_display_new(self):
+        self.phone_number_input.clear()
+        self.name_input.clear()
+        self.postcode_input.clear()
+        self.address1_input.clear()
+        self.address2_input.clear()
+        self.customer_notes_input.clear()
 
     def refresh_display(self):
         self.tableWidget.setRowCount(0)
@@ -141,10 +159,7 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
 
     def setup_connects(self):
         self.telLineEdit.returnPressed.connect(self.handle_search_enter)
-        self.postcodeLineEdit.returnPressed.connect(self.handle_enter)
-        self.address1LineEdit.returnPressed.connect(self.handle_enter)
-        self.address2LineEdit.returnPressed.connect(self.handle_enter)
-        self.nameLineEdit.returnPressed.connect(self.handle_enter)
+
 
     def setup_contact_form(self):
         self.formLayoutWidget = QtWidgets.QWidget(self.centralwidget)
@@ -354,7 +369,7 @@ class ChowsMainWindow(QtWidgets.QMainWindow):
         self.setup_suggestion_table()
         # Search Bar for suggestion Box
         self.setup_search_bar()
-
+    
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
